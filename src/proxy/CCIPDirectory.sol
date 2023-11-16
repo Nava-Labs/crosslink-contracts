@@ -17,9 +17,6 @@ contract CCIPDirectory {
     // uint64 constant chainIdPolygonMumbai = 12532609583862916517;
     mapping(uint64 => CrossChainMetadataAddress) private _crossChainMetadataAddress;
 
-    // Router addresses
-    address constant routerEthereumSepolia =
-        0xD0daae2231E9CB96b94C8512223533293C3693Bf;
     constructor() {
         // sepolia
         _crossChainMetadataAddress[16015286601757825753] = CrossChainMetadataAddress ({
@@ -79,7 +76,6 @@ contract CCIPDirectory {
         CrossChainMetadataAddress[5] memory allChainsData;
 
         for (uint8 i = 0; i < 5; i++) {
-            // Include error handling if necessary
             allChainsData[i] = getConfigFromNetwork(chainIdsSelector[i]);
         }
 
