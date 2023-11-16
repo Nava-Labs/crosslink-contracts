@@ -2,21 +2,13 @@
 pragma solidity 0.8.19;
 
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
-import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
-import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
-import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
-import {Withdraw} from "../utils/Withdraw.sol";
+import {DataProxy, IRouterClient, Client} from "../proxy/DataProxy.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 error Unauthorized();
 
-contract CrossLinkMarketplace is CCIPReceiver, Withdraw {
-
-    address immutable i_link;
-    uint256 immutable chainIdThis;
-
-    address public marketplaceMaster;
+contract CrossLinkMarketplace is DataProxy, CCIPReceiver {
 
     enum SaleType {
         Native,
@@ -63,12 +55,7 @@ contract CrossLinkMarketplace is CCIPReceiver, Withdraw {
 
     event MessageReceived(bytes32 messageId, bytes data);
 
-    constructor(address router, address link, uint256 _chainIdThis) CCIPReceiver(router) {
-        i_link = link;
-        chainIdThis = _chainIdThis;
-
-        LinkTokenInterface(i_link).approve(router, type(uint256).max);
-    }
+    constructor(uint64 _chainIdThis, uint64 _chainIdMaster, address routerThis) CCIPReceiver(routerThis) DataProxy(_chainIdThis, _chainIdMaster) {}
 
     receive() external payable {}   
 
@@ -81,6 +68,8 @@ contract CrossLinkMarketplace is CCIPReceiver, Withdraw {
             price: _price
         });
 
+        bytes memory data = _encodeListingData(tokenAddress, tokenId);
+        _syncData(chainIdThis, data);
         emit Listing(chainIdThis, msg.sender, tokenAddress, tokenId, _price);
     }
             
@@ -117,38 +106,20 @@ contract CrossLinkMarketplace is CCIPReceiver, Withdraw {
         (tokenAddress, tokenId, detail) = abi.decode(data, (address, uint256, ListingDetails));
     }
 
-    function _sendListingMessage(
-        uint64 destinationChainSelector,
-        bytes memory data
-    ) internal returns (bytes32 messageId) {
-        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-            receiver: abi.encode(marketplaceMaster),
-            data: data,
-            tokenAmounts: new Client.EVMTokenAmount[](0),
-            extraArgs: "",
-            feeToken: i_link
-        });
-
-        messageId = IRouterClient(i_router).ccipSend(
-            destinationChainSelector,
-            message
-        );
-
-        emit MessageSent(messageId, data);
-    }
-
     function _ccipReceive(
         Client.Any2EVMMessage memory message
     ) internal override {
-         (address tokenAddress, uint256 tokenId, ListingDetails memory detail) = _decodeListingData(message.data);
-
-        _listingDetails[tokenAddress][tokenId] = detail;
-            
+        _sendToMasterOrUpdate(message.data);
         emit MessageReceived(message.messageId, message.data);
     }
 
     function onERC721Received(address operator, address, uint256, bytes calldata) external view returns(bytes4) {
         require(operator == address(this), "token must be staked over list method");
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
+    }
+
+    function _storeData(bytes memory data) internal override {
+        (address tokenAddress, uint256 tokenId, ListingDetails memory detail) = _decodeListingData(data);
+        _listingDetails[tokenAddress][tokenId] = detail;
     }
 }
