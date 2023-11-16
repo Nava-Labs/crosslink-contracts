@@ -4,7 +4,6 @@ pragma solidity 0.8.19;
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
-import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {CCIPDirectory} from "./CCIPDirectory";
 
 abstract contract Multihop is CCIPDirectory {
@@ -22,47 +21,46 @@ abstract contract Multihop is CCIPDirectory {
     /********************** Encode & Decode *************************/
     /****************************************************************/
 
-    function _encodeAppMessage(bytes4 selector, bytes data) internal virtual;
+    // function _encodeAppMessage(bytes4 selector, bytes data) internal virtual;
 
-    function _decodeAppMessage(bytes message) internal virtual;
+    function _decodeAppMessage(bytes encodedMessage) internal virtual;
 
 
     /****************************************************************/
     /********************** Execute or Forward **********************/
     /****************************************************************/
 
-    function _executeAndForwardMessage(string[] bestRoutes , bytes[] encodedMessages) internal virtual{
+    function _executeAndForwardMessage(string[] bestRoutes , bytes encodedMessage) internal virtual{
         // Delete array bestRoutes to determine the destination
         delete bestRoutes[0];
 
         // Check if already at destination
         if(bestRoutes.length > 0){
-            // Encode message for sending
-            bytes memory data = abi.encode(bestRoutes,encodedMessages);
+            
+            bytes memory data = abi.encode(bestRoutes,encodedMessage)
 
             // Send message
-            uint64 destinationChainSelector = bestRoutes[0].destinationChainSelector;
-            address messageReceiver = bestRoutes[0].messageReceiver;
+            uint64 chainIdNext = bestRoutes[0].chainIdNext;
 
-            _sendMessage(destinationChainSelector, messageReceiver, data);
+            _sendMessage(chainIdNext, data);
 
         }else{
             
-            _decodeAppMessage(encodedMessages);
+            _decodeAppMessage(encodedMessage);
         }
     }
 
     function _sendMessage(
-        uint64 destinationChainSelector,
-        address messageReceiver,
+        uint64 chainIdNext,
         bytes memory data
     ) internal returns (bytes32 messageId) {
         // Get Router and Link
         CrossChainMetadataAddress _metadataChainThis = getConfigFromNetwork(chainIdThis);
+        CrossChainMetadataAddress _metadataChainNext = getConfigFromNetwork(chainIdNext);
 
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
         Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
-            receiver: abi.encode(messageReceiver), // ABI encode next bestRoutes address
+            receiver: abi.encode(_metadataChainNext.crossChainApp), // ABI encode next bestRoutes address
             data: data, // ABI encode message
             tokenAmounts: new Client.EVMTokenAmount[](0),
             extraArgs: "",
@@ -71,7 +69,7 @@ abstract contract Multihop is CCIPDirectory {
 
         // Send Messages
         messageId = IRouterClient(_metadataChainThis.ccipRouter).ccipSend(
-            destinationChainSelector,
+            chainIdNext,
             message
         );
 
