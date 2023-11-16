@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-contract CCIPDirectory {
+abstract contract CCIPDirectory {
 
     struct CrossChainMetadataAddress {
         address ccipRouter;
@@ -15,7 +15,7 @@ contract CCIPDirectory {
     // uint64 constant chainIdAvalancheFuji = 14767482510784806043;
     // uint64 constant chainIdArbitrumTestnet = 6101244977088475029;
     // uint64 constant chainIdPolygonMumbai = 12532609583862916517;
-    mapping(uint64 => CrossChainMetadataAddress) private _crossChainMetadataAddress;
+    mapping(uint64 => CrossChainMetadataAddress) internal _crossChainMetadataAddress;
 
     constructor() {
         // sepolia
@@ -66,11 +66,11 @@ contract CCIPDirectory {
 
     function getAllNetworks() internal view returns (CrossChainMetadataAddress[5] memory) {
         uint64[5] memory chainIdsSelector = [
-            16015286601757825753, 
-            2664363617261496610, 
-            14767482510784806043, 
-            6101244977088475029, 
-            12532609583862916517
+            16015286601757825753, // Sepolia
+            2664363617261496610, // OP Goerli
+            14767482510784806043, // Fuji
+            6101244977088475029, // Arbitrum Testnet
+            12532609583862916517 // PolygonMumbai
         ];
 
         CrossChainMetadataAddress[5] memory allChainsData;
@@ -81,5 +81,7 @@ contract CCIPDirectory {
 
         return allChainsData;
     }
+
+    function updateCrossChainApp(uint64[] memory chainSelector, address[] memory crossChainAppAddress) external virtual;
 
 }
