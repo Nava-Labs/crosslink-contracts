@@ -1,6 +1,7 @@
 {
-  "dependencies": {
-    "@chainlink/contracts": "^0.8.0",
-    "@chainlink/contracts-ccip": "^0.7.6"
+  "name": "crosslink",
+  "devDependencies": {
+    "@chainlink/contracts": "^0.6.1",
+    "@chainlink/contracts-ccip": "^0.7.3"
   }
 }
