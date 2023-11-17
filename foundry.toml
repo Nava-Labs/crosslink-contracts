@@ -13,4 +13,14 @@ polygonMumbai = "${POLYGON_MUMBAI_RPC_URL}"
 bscTestnet = "${BSC_TESTNET_RPC_URL}"
 baseGoerli = "${BASE_GOERLI_RPC_URL}"
 
+[etherscan]
+ethereumSepolia = { key = "${ETHERSCAN_API_KEY}" }
+optimismGoerli = { key = "${OPTIMISM_SCAN_API_KEY}" }
+avalancheFuji = { key = "${AVALANCHE_SCAN_API_KEY}" }
+arbitrumGoerli = { key = "${ARBITRUM_SCAN_API_KEY}" }
+polygonMumbai = { key = "${POLYGON_SCAN_RPC_URL}" }
+bscTestnet = { key = "${BSC_SCAN_RPC_URL}" }
+baseGoerli = { key = "${BASE_SCAN_RPC_URL}" }
+
+
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

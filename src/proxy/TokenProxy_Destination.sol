@@ -2,10 +2,8 @@
 
 pragma solidity ^0.8.19;
 
-import {IERC20, ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
-import {TrustedSender} from "./TrustedSender.sol";
-import {MultiHop} from "../../lib/multihop/Multihop.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {Multihop, IRouterClient, Client, CCIPReceiver} from "../../lib/multihop/Multihop.sol";
 
 error UnauthorizedChainSelector();
 
@@ -14,7 +12,7 @@ error UnauthorizedChainSelector();
  * via Chainlink CCIP.
  * recognized off-chain (via event analysis).
  */
-abstract contract TokenProxy_Destination is ERC20, CCIPReceiver, TrustedSender, Multihop {    
+abstract contract TokenProxy_Destination is Multihop, ERC20 {    
 
     /**
      * @dev Emitted when ERC20 is unlocked or minted
@@ -25,28 +23,11 @@ abstract contract TokenProxy_Destination is ERC20, CCIPReceiver, TrustedSender, 
     //                            CCIP
     // =============================================================
 
-    // // Event emitted when a message is sent to another chain.
-    // event MessageSent(
-    //     bytes32 indexed messageId, // The unique ID of the message.
-    //     uint64 indexed destinationChainSelector, // The chain selector of the destination chain.
-    //     address receiver, // The address of the receiver on the destination chain.
-    //     bytes data, // The message being sent.
-    //     uint256 fees // The fees paid for sending the message.
-    // );
-
-    // // Event emitted when a message is received from another chain.
-    // event MessageReceived(
-    //     bytes32 indexed messageId, // The unique ID of the message.
-    //     uint64 indexed sourceChainSelector, // The chain selector of the source chain.
-    //     address sender, // The address of the sender from the source chain.
-    //     bytes data // The message that was received.
-    // );
-
-    constructor(address _router, uint64 _chainIdThis) CCIPReceiver(_router) Multihop(_chainIdThis);
+    constructor(address _router, uint64 _chainIdThis) Multihop(_chainIdThis, _router) {}
 
     receive() external payable {}
 
-    function burnAndMintOrUnlock(string[] bestRoutes ,address tokenReceiver, uint256 amount) external virtual {
+    function burnAndMintOrUnlock(uint64[] memory bestRoutes ,address tokenReceiver, uint256 amount) external virtual {
         // lock the real token
         _burn(msg.sender, amount);
 
@@ -54,21 +35,13 @@ abstract contract TokenProxy_Destination is ERC20, CCIPReceiver, TrustedSender, 
         bytes memory encodedMessage = abi.encode(tokenReceiver, amount);
 
         // ccip send for triggering mint in dest chain 
-        _executeOrForwardMessage(bestRoutes, encodedMessage);
+        _executeAndForwardMessage(bestRoutes, encodedMessage);
 
-        emit Unlock(msg.sender, amount)
+        emit Unlock(msg.sender, amount);
     }
 
-    function _decodeAppMessage(bytes encodedMessage) internal override{
-        // Trusted Sender check
-        bytes memory trustedSender = trustedSenderLookup[sourceChainSelector];
-        if (trustedSender.length == 0 ||
-            keccak256(trustedSender) != keccak256(abi.encodePacked(sender, address(this)))
-        ) {
-            revert UnauthorizedChainSelector();
-        }
-
-        (address tokenReceiver , uint256) = abi.decode(encodedMessage,(address,uint256));
+    function _decodeAppMessage(bytes memory encodedMessage) internal override{
+        (address tokenReceiver , uint256 amount) = abi.decode(encodedMessage,(address,uint256));
         _mint(tokenReceiver, amount);
 
         emit Unlock(tokenReceiver, amount);
