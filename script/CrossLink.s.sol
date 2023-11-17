@@ -4,6 +4,7 @@ pragma solidity 0.8.19;
 import "forge-std/Script.sol";
 import "./CCIPHelper.sol";
 import {CrossLinkMarketplace} from "../src/marketplace/CrossLinkMarketplace.sol";
+import {SimpleERC20} from "../src/token/SimpleERC20.sol";
 
 contract DeployCrossLinkSepolia is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
@@ -125,6 +126,31 @@ contract DeployCrossLinkPolygonMumbai is Script, CCIPHelper {
             "CrossLink contract deployed on with address: ",
             address(_marketplace)
         );
+
+        vm.stopBroadcast();
+    }
+}
+
+contract UpdateCrossChainApp is Script, CCIPHelper {
+    function run(address payable marketplace, uint64[] memory chainSelector, address[] memory crossChainAppAddress) external {
+
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        CrossLinkMarketplace(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
+
+        vm.stopBroadcast();
+    }
+}
+
+contract DistributeLink is Script, CCIPHelper {
+    function run(SupportedNetworks network, address to, uint256 amount) external {
+        (, address link, , ) = getConfigFromNetwork(network);
+
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        SimpleERC20(link).transfer(to, amount);
 
         vm.stopBroadcast();
     }
