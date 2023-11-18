@@ -69,7 +69,7 @@ contract CrossLinkMarketplace is DataProxy, CCIPReceiver {
         });
 
         bytes memory data = _encodeListingData(tokenAddress, tokenId);
-        _syncData(chainIdThis, data);
+        _syncData(data);
         emit Listing(chainIdThis, msg.sender, tokenAddress, tokenId, _price);
     }
             

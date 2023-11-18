@@ -41,7 +41,7 @@ abstract contract DataProxy is OwnerIsCreator, CCIPDirectory {
         }  else if (chainIdThis == chainIdMaster) {
             bytes memory encodedDataWithMasterOrigin = abi.encode(chainIdMaster, _data);
             _storeData(_data);
-            _distributeProperly(_chainIdOrigin, encodedDataWithMasterOrigin); // exclude origin and self
+            // _distributeProperly(_chainIdOrigin, encodedDataWithMasterOrigin); // exclude origin and self
         } else if (_chainIdOrigin == chainIdMaster) {
             _storeData(_data);
         }
