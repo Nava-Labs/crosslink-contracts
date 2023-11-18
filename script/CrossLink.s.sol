@@ -155,3 +155,14 @@ contract DistributeLink is Script, CCIPHelper {
         vm.stopBroadcast();
     }
 }
+
+contract Listing is Script, CCIPHelper {
+    function run(address payable to, address tokenAddress, uint256 tokenId, uint256 price) external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        CrossLinkMarketplace(to).listing(tokenAddress, tokenId, price);
+
+        vm.stopBroadcast();
+    }
+}
