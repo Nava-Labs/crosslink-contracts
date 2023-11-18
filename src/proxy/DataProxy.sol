@@ -24,6 +24,7 @@ abstract contract DataProxy is OwnerIsCreator, CCIPDirectory {
     }
 
     function updateCrossChainApp(uint64[] memory chainSelector, address[] memory crossChainAppAddress) external override onlyOwner {
+       require(chainSelector.length == crossChainAppAddress.length);
        for (uint256 i = 0; i < chainSelector.length; i++) {
             _crossChainMetadataAddress[chainSelector[i]].crossChainApp = crossChainAppAddress[i];
         }
@@ -33,55 +34,63 @@ abstract contract DataProxy is OwnerIsCreator, CCIPDirectory {
     function _sendToMasterOrUpdate(
         bytes memory data
     ) internal {
-        (uint64 _chainIdOrigin, bytes memory encodedData) = abi.decode(data, (uint64, bytes));
+        (uint64 _chainIdOrigin, bytes memory _data) = abi.decode(data, (uint64, bytes));
 
-        if (chainIdThis == chainIdMaster) {
-            _storeData(data);
-            _distributeToAll(data);
+        if (chainIdThis != chainIdMaster && _chainIdOrigin != chainIdMaster) {
+            _sendToMaster(data);
+        }  else if (chainIdThis == chainIdMaster) {
+            bytes memory encodedDataWithMasterOrigin = abi.encode(chainIdMaster, _data);
+            _storeData(_data);
+            _distributeProperly(_chainIdOrigin, encodedDataWithMasterOrigin); // exclude origin and self
         } else if (_chainIdOrigin == chainIdMaster) {
-            _storeData(data);
-        } else {
-            bytes memory encodedDataWithOrigin = abi.encode(chainIdMaster, encodedData);
-            _sendToMaster(encodedDataWithOrigin);
+            _storeData(_data);
         }
     }
 
     function _sendToMaster(bytes memory data) private returns (bytes32 messageId) {        
         CrossChainMetadataAddress memory _metadataChainMaster = getConfigFromNetwork(chainIdMaster);
-        messageId = _sendMessage(_metadataChainMaster.crossChainApp, data);
+        messageId = _sendMessage(chainIdMaster, _metadataChainMaster.crossChainApp, data);
    }
 
-    function _sendMessage(address receiver, bytes memory data) internal returns (bytes32 messageId) {
+    function _sendMessage(uint64 toChain, address receiver, bytes memory data) internal returns (bytes32 messageId) {
         CrossChainMetadataAddress memory _metadataChainThis = getConfigFromNetwork(chainIdThis);
+
+        Client.EVMExtraArgsV1 memory _extraArgs = Client.EVMExtraArgsV1 ({
+          gasLimit: 2_000_000,
+          strict: true
+        });
 
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(receiver),
             data: data,
             tokenAmounts: new Client.EVMTokenAmount[](0),
-            extraArgs: "",
+            extraArgs: Client._argsToBytes(_extraArgs),
             feeToken: _metadataChainThis.linkToken
         });
 
         messageId = IRouterClient(_metadataChainThis.ccipRouter).ccipSend(
-            chainIdMaster,
+            toChain,
             message
         );
 
         emit SyncDataMessage(messageId, data);        
     }
 
-    function _syncData(uint64 chainIdOrigin, bytes memory data) internal {
-        _sendToMasterOrUpdate(abi.encode(chainIdOrigin, data));
+    function _syncData(bytes memory data) internal {
+        _sendToMasterOrUpdate(abi.encode(chainIdThis, data));
     }
 
     function _storeData(bytes memory data) internal virtual;
 
 
-    function _distributeToAll(bytes memory data) private {
-        CrossChainMetadataAddress[5] memory _metadatas = getAllNetworks(); 
+    function _distributeProperly(uint64 excludedChain, bytes memory data) private {
+        CrossChainMetadataAddress[3] memory _metadatas = getAllNetworks(); 
 
-        for(uint8 i = 0; i < _metadatas.length; i++) {
-            _sendMessage(_metadatas[i].crossChainApp, data);
+        // always exclude sepolia for duplication while storing data
+        for(uint8 i = 1; i < _metadatas.length; i++) {
+            if (_metadatas[i].chainIdSelector != excludedChain) {
+                _sendMessage(_metadatas[i].chainIdSelector, _metadatas[i].crossChainApp, data);    
+            }
         }
     }
 
