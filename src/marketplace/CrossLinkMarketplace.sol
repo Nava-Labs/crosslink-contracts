@@ -1,14 +1,25 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
-import {DataProxy, IRouterClient, Client} from "../proxy/DataProxy.sol";
+import {ChainlinkAppDataLayer} from "../chainlink-app/extension/ChainlinkAppDataLayer.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-error Unauthorized();
+interface ITokenProxySource {
+    function lockAndMint(uint64[] memory bestRoutes ,address tokenReceiver, uint256 amount) external;
+}
 
-contract CrossLinkMarketplace is DataProxy, CCIPReceiver {
+interface ITokenProxyDestination {
+    function burnAndMintOrUnlock(uint64[] memory bestRoutes ,address tokenReceiver, uint256 amount) external;
+}
+
+error Unauthorized();
+error NotForSale();
+error ExecutionFailed();
+
+contract CrossLinkMarketplace is ChainlinkAppDataLayer {
+
+    address immutable public tokenPayment;
 
     enum SaleType {
         Native,
@@ -16,34 +27,34 @@ contract CrossLinkMarketplace is DataProxy, CCIPReceiver {
     }
 
     struct ListingDetails {
-        uint256 chainIdSelector;
+        uint64 chainIdSelector;
         address listedBy;
         uint256 price;
     }
     mapping(address => mapping(uint256 => ListingDetails)) private _listingDetails; // tokenAddress => tokenId => ListingDetails
 
-    // struct CrossChainSale {
-    //     uint256 chainIdSelector;
-    //     address newOwner;
-    // }
+    struct CrossChainSale {
+        uint64 chainIdSelector;
+        address newOwner;
+    }
 
     event Listing(
-        uint256 indexed chainIdSelector,
+        uint64 indexed chainIdSelector,
         address indexed ownerAddress, 
         address indexed tokenAddress,
         uint256 tokenId,
         uint256 price
     );
 
-    // event Sale(
-    //     SaleType indexed saleType,
-    //     uint256 indexed chainIdSelector,
-    //     address indexed tokenAddress, 
-    //     address newOwner,
-    //     address prevOwner, 
-    //     uint256 tokenId,
-    //     uint256 price
-    // );
+    event Sale(
+        SaleType indexed saleType,
+        uint64 indexed paymentChainIdSelector,
+        address indexed tokenAddress, 
+        address newOwner,
+        address prevOwner, 
+        uint256 tokenId,
+        uint256 price
+    );
 
     event Cancel(
         address indexed userAddress, 
@@ -51,16 +62,14 @@ contract CrossLinkMarketplace is DataProxy, CCIPReceiver {
         uint256 tokenId
     );
 
-    event MessageSent(bytes32 messageId, bytes data);
-
-    event MessageReceived(bytes32 messageId, bytes data);
-
-    constructor(uint64 _chainIdThis, uint64 _chainIdMaster, address routerThis) CCIPReceiver(routerThis) DataProxy(_chainIdThis, _chainIdMaster) {}
+    constructor(uint64 _chainIdThis, uint64 _chainIdMaster, address _router, address _tokenPayment) ChainlinkAppDataLayer(_chainIdThis, _chainIdMaster, _router) {
+        tokenPayment = _tokenPayment;
+    }
 
     receive() external payable {}   
 
     function listing(address tokenAddress, uint256 tokenId, uint256 _price) external {
-        // IERC721(tokenAddress).safeTransferFrom(msg.sender, address(this), tokenId);
+        IERC721(tokenAddress).safeTransferFrom(msg.sender, address(this), tokenId);
 
         _listingDetails[tokenAddress][tokenId] = ListingDetails ({
             chainIdSelector: chainIdThis,
@@ -70,6 +79,7 @@ contract CrossLinkMarketplace is DataProxy, CCIPReceiver {
 
         bytes memory data = _encodeListingData(tokenAddress, tokenId);
         _syncData(data);
+
         emit Listing(chainIdThis, msg.sender, tokenAddress, tokenId, _price);
     }
             
@@ -80,14 +90,60 @@ contract CrossLinkMarketplace is DataProxy, CCIPReceiver {
         }
 
         _listingDetails[tokenAddress][tokenId] = ListingDetails ({
-            chainIdSelector: chainIdThis,
+            chainIdSelector: 0,
             listedBy: address(0),
             price: 0
         });
 
-        // IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
+        IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
+
+        bytes memory data = _encodeListingData(tokenAddress, tokenId);
+        _syncData(data);
 
         emit Cancel(msg.sender, tokenAddress, tokenId);
+    }
+
+    function buy(SaleType saleType, uint64[] memory bestRoutes, address tokenAddress, uint256 tokenId) external {    
+        address _listedBy = _listingDetails[tokenAddress][tokenId].listedBy;
+        uint256 _listingPrice = _listingDetails[tokenAddress][tokenId].price;
+
+        if (_listedBy == address(0)) {
+            revert NotForSale();
+        }
+
+        _listingDetails[tokenAddress][tokenId] = ListingDetails ({
+            chainIdSelector: 0,
+            listedBy: address(0),
+            price: 0
+        });
+
+        if (saleType == SaleType.Native) {
+            IERC20(tokenPayment).transferFrom(msg.sender, _listedBy, _listingPrice);
+            IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
+
+            emit Sale(SaleType.Native, chainIdThis, tokenAddress, msg.sender, _listedBy, tokenId, _listingPrice);
+        } else {
+            ListingDetails memory detail = _listingDetails[tokenAddress][tokenId];
+          
+            // sync data listed
+            bytes memory delistNftData = _encodeListingData(tokenAddress, tokenId);
+            _syncData(delistNftData);
+
+            // move nft & turn on the multihop 
+            bytes memory data = _encodeCrossChainSaleData(tokenAddress, tokenId, msg.sender);
+            bytes[] memory _appMessage = new bytes[](1);
+            _appMessage[0] = abi.encodeWithSelector("_decodeAndTransferCrossChainBuy(bytes)", data);
+            _executeAndForwardMessage(bestRoutes, _appMessage);
+
+            if (chainIdThis == chainIdMaster) {
+                ITokenProxySource(tokenPayment).lockAndMint(bestRoutes, _listedBy,_listingPrice);
+            } else {
+                ITokenProxyDestination(tokenPayment).burnAndMintOrUnlock(bestRoutes, _listedBy,_listingPrice);
+            }
+
+
+            emit Sale(SaleType.Native, chainIdThis, tokenAddress, msg.sender, detail.listedBy, tokenId, detail.price);
+        }
     }
 
     function checkListedNftDetails(address tokenAddress, uint256 tokenId) external view returns (ListingDetails memory) {
@@ -106,11 +162,37 @@ contract CrossLinkMarketplace is DataProxy, CCIPReceiver {
         (tokenAddress, tokenId, detail) = abi.decode(data, (address, uint256, ListingDetails));
     }
 
-    function _ccipReceive(
-        Client.Any2EVMMessage memory message
-    ) internal override {
-        _sendToMasterOrUpdate(message.data);
-        emit MessageReceived(message.messageId, message.data);
+    function _encodeCrossChainSaleData(address tokenAddress, uint256 tokenId, address _newOwner) internal view returns (bytes memory) {
+        CrossChainSale memory _crossChainSale = CrossChainSale ({
+            chainIdSelector: chainIdThis,
+            newOwner: _newOwner
+        });
+        return abi.encode(tokenAddress, tokenId, _listingDetails[tokenAddress][tokenId], _crossChainSale);
+    }
+
+    function _decodeAndTransferCrossChainBuy(bytes memory data) internal {
+        (address tokenAddress, uint256 tokenId, , CrossChainSale memory ccSale) = abi.decode(data, (address, uint256, ListingDetails, CrossChainSale));
+        _transferNftToBuyer(tokenAddress, ccSale.newOwner, tokenId);
+    }
+
+    function _decodeAppMessage(bytes[] memory encodedMessage) internal override {
+        // // handle sync
+        // _sendToMasterOrUpdate(encodedMessage[0]);
+
+        // // or handle buy
+        // (address tokenAddress, uint256 tokenId, , CrossChainSale memory ccSale) = _decodeCrossChainBuy(encodedMessage[1]);
+        // _transferNftToBuyer(tokenAddress, ccSale.newOwner, tokenId);
+
+        for (uint8 i = 0; i <  encodedMessage.length; i++) {
+            (bool success, ) = address(this).call(encodedMessage[i]);
+            if (!success) {
+                ExecutionFailed();
+            }
+        }
+    }
+
+    function _transferNftToBuyer(address tokenAddress, address to, uint256 tokenId) internal {
+        IERC721(tokenAddress).safeTransferFrom(address(this), to, tokenId);
     }
 
     function onERC721Received(address operator, address, uint256, bytes calldata) external view returns(bytes4) {

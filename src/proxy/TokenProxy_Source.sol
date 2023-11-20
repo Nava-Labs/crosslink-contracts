@@ -3,7 +3,7 @@
 pragma solidity ^0.8.19;
 
 import {IERC20 , ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Multihop, IRouterClient, Client, CCIPReceiver} from "../../lib/multihop/Multihop.sol";
+import {ChainlinkApp} from "../chainlink-app/ChainlinkApp.sol";
 
 error UnauthorizedChainSelector();
 
@@ -12,7 +12,7 @@ error UnauthorizedChainSelector();
  * via Chainlink CCIP.
  * recognized off-chain (via event analysis).
  */
-contract TokenProxy_Source is Multihop {    
+contract TokenProxy_Source is ChainlinkApp {    
 
     address immutable public tokenAddress; 
 
@@ -30,7 +30,7 @@ contract TokenProxy_Source is Multihop {
     //                            CCIP
     // =============================================================
 
-    constructor(address _tokenAddress, address _router, uint64 _chainIdThis) Multihop(_chainIdThis, _router){
+    constructor(address _tokenAddress, address _router, uint64 _chainIdThis) ChainlinkApp(_chainIdThis, _router){
         tokenAddress = _tokenAddress;
     }
 

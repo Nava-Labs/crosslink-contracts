@@ -5,22 +5,28 @@ import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
-import {CCIPDirectory} from "./CCIPDirectory.sol";
+import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
 import {TrustedSender} from "./TrustedSender.sol";
 
 error UnauthorizedChainSelector();
+error FailedToWithdrawEth(address owner, address target, uint256 value);
 
-abstract contract Multihop is CCIPDirectory, CCIPReceiver , TrustedSender {
+abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
 
     uint64 immutable public chainIdThis;
 
-    constructor (uint64 _chainIdThis, address _router) CCIPReceiver(_router){
+    event MessageSent(bytes32 messageId, bytes data);
+
+    event MessageReceived(bytes32 messageId, bytes data);
+
+    constructor (uint64 _chainIdThis, address _router) CCIPReceiver(_router) {
         CrossChainMetadataAddress memory _metadata = getConfigFromNetwork(_chainIdThis);
 
         chainIdThis = _chainIdThis;
 
         LinkTokenInterface(_metadata.linkToken).approve(_metadata.ccipRouter, type(uint256).max);
     }
+
     /****************************************************************/
     /********************** Encode & Decode *************************/
     /****************************************************************/
@@ -29,12 +35,11 @@ abstract contract Multihop is CCIPDirectory, CCIPReceiver , TrustedSender {
 
     function _decodeAppMessage(bytes[] memory encodedMessage) internal virtual;
 
-
     /****************************************************************/
     /********************** Execute or Forward **********************/
     /****************************************************************/
 
-    function _executeAndForwardMessage(uint64[] memory bestRoutes , bytes[] memory encodedMessage) internal {
+    function _executeAndForwardMessage(uint64[] memory bestRoutes, bytes[] memory encodedMessage) internal {
         // remove first array bestRoutes to determine the destination
         uint64[] memory newBestRoutes = new uint64[](bestRoutes.length - 1);
         for(uint256 i = 0; i < bestRoutes.length - 1; i++){
@@ -47,37 +52,37 @@ abstract contract Multihop is CCIPDirectory, CCIPReceiver , TrustedSender {
 
             // Send message
             uint64 chainIdNext = newBestRoutes[0];
+            CrossChainMetadataAddress memory _metadataChainThis = getConfigFromNetwork(chainIdNext);
 
-            _sendMessage(chainIdNext, data);
+            _sendMessage(chainIdNext, _metadataChainThis.crossChainApp, data);
 
         }else{
             _decodeAppMessage(encodedMessage);
         }
     }
 
-    function _sendMessage(
-        uint64 chainIdNext,
-        bytes memory data
-    ) internal returns (bytes32 messageId) {
-        // Get Router and Link
+    function _sendMessage(uint64 toChain, address receiver, bytes memory data) internal returns (bytes32 messageId) {
         CrossChainMetadataAddress memory _metadataChainThis = getConfigFromNetwork(chainIdThis);
-        CrossChainMetadataAddress memory _metadataChainNext = getConfigFromNetwork(chainIdNext);
 
-        // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
-        Client.EVM2AnyMessage memory ccipMessage = Client.EVM2AnyMessage({
-            receiver: abi.encode(_metadataChainNext.crossChainApp), // ABI encode next bestRoutes address
-            data: data, // ABI encode message
-            tokenAmounts: new Client.EVMTokenAmount[](0),
-            extraArgs: "",
-            feeToken: _metadataChainThis.linkToken // Setting feeToken to $LINK, as main currency for fee
+        Client.EVMExtraArgsV1 memory _extraArgs = Client.EVMExtraArgsV1 ({
+          gasLimit: 2_000_000,
+          strict: true
         });
 
-        // Send Messages
+        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+            receiver: abi.encode(receiver),
+            data: data,
+            tokenAmounts: new Client.EVMTokenAmount[](0),
+            extraArgs: Client._argsToBytes(_extraArgs),
+            feeToken: _metadataChainThis.linkToken
+        });
+
         messageId = IRouterClient(_metadataChainThis.ccipRouter).ccipSend(
-            chainIdNext,
-            ccipMessage
+            toChain,
+            message
         );
 
+        emit MessageSent(messageId, data);
         return messageId;
     }
 
@@ -94,9 +99,17 @@ abstract contract Multihop is CCIPDirectory, CCIPReceiver , TrustedSender {
         
         (uint64[] memory bestRoutes , bytes[] memory encodedMessage) = abi.decode(message.data,(uint64[], bytes[]));
         
-        _executeAndForwardMessage(bestRoutes,encodedMessage);
+        _executeAndForwardMessage(bestRoutes, encodedMessage);
 
+        emit MessageReceived(message.messageId, message.data);
     }
 
+    function withdrawToken(
+        address beneficiary,
+        address token
+    ) public onlyOwner {
+        uint256 amount = IERC20(token).balanceOf(address(this));
+        IERC20(token).transfer(beneficiary, amount);
+    }
     
 }

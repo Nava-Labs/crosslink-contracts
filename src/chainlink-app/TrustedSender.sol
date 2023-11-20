@@ -4,10 +4,10 @@
 
 pragma solidity ^0.8.19;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
 import {CCIPDirectory} from "./CCIPDirectory.sol";
 
-contract TrustedSender is Ownable, CCIPDirectory {
+contract TrustedSender is OwnerIsCreator, CCIPDirectory {
 
     /**
      * @dev Emitted when Trusted Sender is set
