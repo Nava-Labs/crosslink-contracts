@@ -2,8 +2,7 @@
 
 pragma solidity ^0.8.19;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {TrustedSender} from "./TrustedSender.sol";
+import {IERC20 , ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Multihop, IRouterClient, Client, CCIPReceiver} from "../../lib/multihop/Multihop.sol";
 
 error UnauthorizedChainSelector();
@@ -13,7 +12,7 @@ error UnauthorizedChainSelector();
  * via Chainlink CCIP.
  * recognized off-chain (via event analysis).
  */
-abstract contract TokenProxy_Source is Multihop {    
+contract TokenProxy_Source is Multihop {    
 
     address immutable public tokenAddress; 
 
@@ -42,7 +41,8 @@ abstract contract TokenProxy_Source is Multihop {
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
 
         // Encode tokenReceiver & Amount
-        bytes memory encodedMessage = abi.encode(tokenReceiver, amount);
+        bytes[] memory encodedMessage = new bytes[](1);
+        encodedMessage[0] = abi.encode(tokenReceiver,amount);
 
         // ccip send for triggering mint in dest chain
         _executeAndForwardMessage(bestRoutes, encodedMessage);
@@ -50,15 +50,13 @@ abstract contract TokenProxy_Source is Multihop {
         emit Lock(msg.sender, amount);
     }
 
-    function _decodeAppMessage(bytes memory encodedMessage) internal override{
-        (address tokenReceiver , uint256 amount) = abi.decode(encodedMessage,(address,uint256));
-        IERC20(tokenAddress).transfer(tokenReceiver,amount);
+    function _decodeAppMessage(bytes[] memory encodedMessage) internal override{
+        for(uint256 i = 0; i < encodedMessage.length; i++){
+            (address tokenReceiver , uint256 amount) = abi.decode(encodedMessage[i],(address,uint256));
 
-        emit Unlock(tokenReceiver, amount);
-
+            IERC20(tokenAddress).transfer(tokenReceiver,amount);
+            
+            emit Unlock(tokenReceiver, amount);
+        }
     }
-
-    
-
-    
 }

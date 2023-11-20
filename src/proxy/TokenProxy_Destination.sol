@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.19;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20, ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Multihop, IRouterClient, Client, CCIPReceiver} from "../../lib/multihop/Multihop.sol";
 
 error UnauthorizedChainSelector();
@@ -32,7 +32,8 @@ abstract contract TokenProxy_Destination is Multihop, ERC20 {
         _burn(msg.sender, amount);
 
         // Encode tokenReceiver & Amount
-        bytes memory encodedMessage = abi.encode(tokenReceiver, amount);
+        bytes[] memory encodedMessage = new bytes[](1);
+        encodedMessage[0] = abi.encode(tokenReceiver,amount);
 
         // ccip send for triggering mint in dest chain 
         _executeAndForwardMessage(bestRoutes, encodedMessage);
@@ -40,11 +41,14 @@ abstract contract TokenProxy_Destination is Multihop, ERC20 {
         emit Unlock(msg.sender, amount);
     }
 
-    function _decodeAppMessage(bytes memory encodedMessage) internal override{
-        (address tokenReceiver , uint256 amount) = abi.decode(encodedMessage,(address,uint256));
-        _mint(tokenReceiver, amount);
+    function _decodeAppMessage(bytes[] memory encodedMessage) internal override{
+        for(uint256 i = 0; i < encodedMessage.length; i++){
+            (address tokenReceiver , uint256 amount) = abi.decode(encodedMessage[i],(address,uint256));
 
-        emit Unlock(tokenReceiver, amount);
+            _mint(tokenReceiver, amount);
+
+            emit Unlock(tokenReceiver, amount);
+        }
     }
     
 
