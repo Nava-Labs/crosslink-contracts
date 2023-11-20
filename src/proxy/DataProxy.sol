@@ -12,6 +12,8 @@ abstract contract DataProxy is OwnerIsCreator, CCIPDirectory {
     uint64 immutable public chainIdMaster;
     uint64 immutable public chainIdThis;
 
+    uint256 public latestSyncTime;
+
     event SyncDataMessage(bytes32 messageId, bytes data);
 
     constructor(uint64 _chainIdThis, uint64 _chainIdMaster) {
@@ -34,17 +36,21 @@ abstract contract DataProxy is OwnerIsCreator, CCIPDirectory {
     function _sendToMasterOrUpdate(
         bytes memory data
     ) internal {
-        (uint64 _chainIdOrigin, bytes memory _data) = abi.decode(data, (uint64, bytes));
+        (uint64 _chainIdOrigin, bytes memory _data, uint256 _latestSyncTime) = abi.decode(data, (uint64, bytes, uint256));
 
         if (chainIdThis != chainIdMaster && _chainIdOrigin != chainIdMaster) {
             _sendToMaster(data);
         }  else if (chainIdThis == chainIdMaster) {
-            bytes memory encodedDataWithMasterOrigin = abi.encode(chainIdMaster, _data);
+            bytes memory encodedDataWithMasterOrigin = abi.encode(chainIdMaster, _data, _latestSyncTime);
             _storeData(_data);
+            latestSyncTime = _latestSyncTime;
             _distributeProperly(_chainIdOrigin, encodedDataWithMasterOrigin); // exclude origin and self
         } else if (_chainIdOrigin == chainIdMaster) {
             _storeData(_data);
+            latestSyncTime = _latestSyncTime;
         }
+
+        latestSyncTimestamp = block.timestamp;
     }
 
     function _sendToMaster(bytes memory data) private returns (bytes32 messageId) {        
@@ -77,7 +83,7 @@ abstract contract DataProxy is OwnerIsCreator, CCIPDirectory {
     }
 
     function _syncData(bytes memory data) internal {
-        _sendToMasterOrUpdate(abi.encode(chainIdThis, data));
+        _sendToMasterOrUpdate(abi.encode(chainIdThis, data, block.timestamp));
     }
 
     function _storeData(bytes memory data) internal virtual;
