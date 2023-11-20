@@ -41,7 +41,7 @@ abstract contract DataProxy is OwnerIsCreator, CCIPDirectory {
         }  else if (chainIdThis == chainIdMaster) {
             bytes memory encodedDataWithMasterOrigin = abi.encode(chainIdMaster, _data);
             _storeData(_data);
-            // _distributeProperly(_chainIdOrigin, encodedDataWithMasterOrigin); // exclude origin and self
+            _distributeProperly(_chainIdOrigin, encodedDataWithMasterOrigin); // exclude origin and self
         } else if (_chainIdOrigin == chainIdMaster) {
             _storeData(_data);
         }
@@ -84,7 +84,7 @@ abstract contract DataProxy is OwnerIsCreator, CCIPDirectory {
 
 
     function _distributeProperly(uint64 excludedChain, bytes memory data) private {
-        CrossChainMetadataAddress[3] memory _metadatas = getAllNetworks(); 
+        CrossChainMetadataAddress[4] memory _metadatas = getAllNetworks(); 
 
         // always exclude sepolia for duplication while storing data
         for(uint8 i = 1; i < _metadatas.length; i++) {

@@ -5,6 +5,7 @@ import "forge-std/Script.sol";
 import "./CCIPHelper.sol";
 import {CrossLinkMarketplace} from "../src/marketplace/CrossLinkMarketplace.sol";
 import {SimpleERC20} from "../src/token/SimpleERC20.sol";
+import {console2} from "forge-std/Test.sol";
 
 contract DeployCrossLinkSepolia is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
@@ -130,6 +131,32 @@ contract DeployCrossLinkPolygonMumbai is Script, CCIPHelper {
         vm.stopBroadcast();
     }
 }
+
+contract DeployCrossLinkBaseGoerli is Script, CCIPHelper {
+    function run(SupportedNetworks chain) external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        (address router, address link, , ) = getConfigFromNetwork(chain);
+        
+        uint64 chainIdThis = 5790810961207155433;
+        uint64 chainIdMaster = 16015286601757825753;
+
+        CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
+            chainIdThis,
+            chainIdMaster,
+            router
+        );
+
+        console.log(
+            "CrossLink contract deployed on with address: ",
+            address(_marketplace)
+        );
+
+        vm.stopBroadcast();
+    }
+}
+
 
 contract UpdateCrossChainApp is Script, CCIPHelper {
     function run(address payable marketplace, uint64[] memory chainSelector, address[] memory crossChainAppAddress) external {
