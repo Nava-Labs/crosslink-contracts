@@ -12,7 +12,8 @@ contract DeployCrossLinkSepolia is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, address link, , ) = getConfigFromNetwork(chain);
+        (address router, , , ) = getConfigFromNetwork(chain);
+        address _tokenPayment = address(0);
 
         uint64 chainIdThis = 16015286601757825753;
         uint64 chainIdMaster = 16015286601757825753;
@@ -20,7 +21,8 @@ contract DeployCrossLinkSepolia is Script, CCIPHelper {
         CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
             chainIdThis,
             chainIdMaster,
-            router
+            router,
+            _tokenPayment
         );
 
         console.log(
@@ -37,7 +39,8 @@ contract DeployCrossLinkOpGoerli is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, address link, , ) = getConfigFromNetwork(chain);
+        (address router, , , ) = getConfigFromNetwork(chain);
+        address _tokenPayment = address(0);
 
         uint64 chainIdThis = 2664363617261496610;
         uint64 chainIdMaster = 16015286601757825753;
@@ -45,7 +48,8 @@ contract DeployCrossLinkOpGoerli is Script, CCIPHelper {
         CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
             chainIdThis,
             chainIdMaster,
-            router
+            router,
+            _tokenPayment
         );
 
         console.log(
@@ -62,7 +66,8 @@ contract DeployCrossLinkFuji is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, address link, , ) = getConfigFromNetwork(chain);
+        (address router, , , ) = getConfigFromNetwork(chain);
+                address _tokenPayment = address(0);
 
         uint64 chainIdThis = 14767482510784806043;
         uint64 chainIdMaster = 16015286601757825753;
@@ -70,7 +75,8 @@ contract DeployCrossLinkFuji is Script, CCIPHelper {
         CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
             chainIdThis,
             chainIdMaster,
-            router
+            router,
+            _tokenPayment
         );
 
         console.log(
@@ -87,7 +93,9 @@ contract DeployCrossLinkArbitrumGoerli is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, address link, , ) = getConfigFromNetwork(chain);
+        (address router, , , ) = getConfigFromNetwork(chain);
+                address _tokenPayment = address(0);
+
 
         uint64 chainIdThis = 6101244977088475029;
         uint64 chainIdMaster = 16015286601757825753;
@@ -95,7 +103,8 @@ contract DeployCrossLinkArbitrumGoerli is Script, CCIPHelper {
         CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
             chainIdThis,
             chainIdMaster,
-            router
+            router,
+            _tokenPayment
         );
 
         console.log(
@@ -112,7 +121,9 @@ contract DeployCrossLinkPolygonMumbai is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, address link, , ) = getConfigFromNetwork(chain);
+        (address router, , , ) = getConfigFromNetwork(chain);
+                address _tokenPayment = address(0);
+
 
         uint64 chainIdThis = 12532609583862916517;
         uint64 chainIdMaster = 16015286601757825753;
@@ -120,7 +131,8 @@ contract DeployCrossLinkPolygonMumbai is Script, CCIPHelper {
         CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
             chainIdThis,
             chainIdMaster,
-            router
+            router,
+            _tokenPayment
         );
 
         console.log(
@@ -137,7 +149,8 @@ contract DeployCrossLinkBaseGoerli is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, address link, , ) = getConfigFromNetwork(chain);
+        (address router, , , ) = getConfigFromNetwork(chain);
+        address _tokenPayment = address(0);
         
         uint64 chainIdThis = 5790810961207155433;
         uint64 chainIdMaster = 16015286601757825753;
@@ -145,7 +158,8 @@ contract DeployCrossLinkBaseGoerli is Script, CCIPHelper {
         CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
             chainIdThis,
             chainIdMaster,
-            router
+            router,
+            _tokenPayment
         );
 
         console.log(

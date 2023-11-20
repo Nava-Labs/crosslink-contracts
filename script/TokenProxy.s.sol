@@ -13,8 +13,6 @@ contract DeployTokenProxySourceAsSourceInSepolia is Script, CCIPHelper {
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        
-        console.log(router);
         uint64 chainIdSepolia = 16015286601757825753;
         address tokenAddress = 0xe317A28EceC92f5FeF03d4F9Cd37f291AB5672D2;
 
@@ -42,9 +40,7 @@ contract DeployBridgedCoffeeAsDestinationInOPGoerli is Script, CCIPHelper {
 
         string memory name = "Bridged COFFEE";
         string memory symbol = "BisCoff";
-        console.log(router);
         uint64 chainIdOPGoerli = 2664363617261496610;
-
 
         BridgedCoffee _bridgedCoffee = new BridgedCoffee(
             name,
@@ -71,9 +67,7 @@ contract DeployBridgedCoffeeAsDestinationInFuji is Script, CCIPHelper {
 
         string memory name = "Bridged COFFEE";
         string memory symbol = "BisCoff";
-        console.log(router);
         uint64 chainIdFuji = 14767482510784806043;
-
 
         BridgedCoffee _bridgedCoffee = new BridgedCoffee(
             name,
@@ -100,9 +94,7 @@ contract DeployBridgedCoffeeAsDestinationInArbitrumGoerli is Script, CCIPHelper 
 
         string memory name = "Bridged COFFEE";
         string memory symbol = "BisCoff";
-        console.log(router);
         uint64 chainIdArbitrumGoerli = 6101244977088475029;
-
 
         BridgedCoffee _bridgedCoffee = new BridgedCoffee(
             name,
@@ -129,9 +121,7 @@ contract DeployBridgedCoffeeAsDestinationInPolygonMumbai is Script, CCIPHelper {
 
         string memory name = "Bridged COFFEE";
         string memory symbol = "BisCoff";
-        console.log(router);
         uint64 chainIdPolygonMumbai = 12532609583862916517;
-
 
         BridgedCoffee _bridgedCoffee = new BridgedCoffee(
             name,
