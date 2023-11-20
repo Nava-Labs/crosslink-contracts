@@ -6,8 +6,11 @@ import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkT
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {CCIPDirectory} from "./CCIPDirectory.sol";
+import {TrustedSender} from "./TrustedSender.sol";
 
-abstract contract Multihop is CCIPDirectory, CCIPReceiver {
+error UnauthorizedChainSelector();
+
+abstract contract Multihop is CCIPDirectory, CCIPReceiver , TrustedSender {
 
     uint64 immutable public chainIdThis;
 
@@ -24,23 +27,26 @@ abstract contract Multihop is CCIPDirectory, CCIPReceiver {
 
     // function _encodeAppMessage(bytes4 selector, bytes data) internal virtual;
 
-    function _decodeAppMessage(bytes memory encodedMessage) internal virtual;
+    function _decodeAppMessage(bytes[] memory encodedMessage) internal virtual;
 
 
     /****************************************************************/
     /********************** Execute or Forward **********************/
     /****************************************************************/
 
-    function _executeAndForwardMessage(uint64[] memory bestRoutes , bytes memory encodedMessage) internal {
-        // Delete array bestRoutes to determine the destination
-        delete bestRoutes[0];
+    function _executeAndForwardMessage(uint64[] memory bestRoutes , bytes[] memory encodedMessage) internal {
+        // remove first array bestRoutes to determine the destination
+        uint64[] memory newBestRoutes = new uint64[](bestRoutes.length - 1);
+        for(uint256 i = 0; i < bestRoutes.length - 1; i++){
+            newBestRoutes[i] = bestRoutes[i+1];
+        }
 
         // Check if already at destination
-        if(bestRoutes.length > 0){
-            bytes memory data = abi.encode(bestRoutes,encodedMessage);
+        if(newBestRoutes.length > 0){
+            bytes memory data = abi.encode(newBestRoutes,encodedMessage);
 
             // Send message
-            uint64 chainIdNext = bestRoutes[0];
+            uint64 chainIdNext = newBestRoutes[0];
 
             _sendMessage(chainIdNext, data);
 
@@ -78,12 +84,19 @@ abstract contract Multihop is CCIPDirectory, CCIPReceiver {
     function _ccipReceive(
         Client.Any2EVMMessage memory message
     ) internal override{
-        (uint64[] memory bestRoutes , bytes memory encodedMessage) = abi.decode(message.data,(uint64[], bytes));
+        uint64 sourceChainSelector = message.sourceChainSelector; // fetch the source chain identifier (aka selector)
+        address sender = abi.decode(message.sender, (address)); // abi-decoding of the sender address
+
+        // Trusted Sender check
+        if (!isTrustedSender(sourceChainSelector,sender)) {
+            revert UnauthorizedChainSelector();
+        }
+        
+        (uint64[] memory bestRoutes , bytes[] memory encodedMessage) = abi.decode(message.data,(uint64[], bytes[]));
         
         _executeAndForwardMessage(bestRoutes,encodedMessage);
 
     }
 
-
-
+    
 }
