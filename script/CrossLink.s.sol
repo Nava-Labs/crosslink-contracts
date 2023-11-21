@@ -13,7 +13,7 @@ contract DeployCrossLinkSepolia is Script, CCIPHelper {
         vm.startBroadcast(deployerPrivateKey);
 
         (address router, , , ) = getConfigFromNetwork(chain);
-        address _tokenPayment = address(0);
+        address _tokenPayment = 0xA364E5A4D3F7Bf47Bcaa135634dFe1e47B2c57b8;
 
         uint64 chainIdThis = 16015286601757825753;
         uint64 chainIdMaster = 16015286601757825753;
@@ -40,7 +40,7 @@ contract DeployCrossLinkOpGoerli is Script, CCIPHelper {
         vm.startBroadcast(deployerPrivateKey);
 
         (address router, , , ) = getConfigFromNetwork(chain);
-        address _tokenPayment = address(0);
+        address _tokenPayment = 0x7794DECEb421974aD5f61Cd04699715CAeb10638;
 
         uint64 chainIdThis = 2664363617261496610;
         uint64 chainIdMaster = 16015286601757825753;
@@ -67,7 +67,7 @@ contract DeployCrossLinkFuji is Script, CCIPHelper {
         vm.startBroadcast(deployerPrivateKey);
 
         (address router, , , ) = getConfigFromNetwork(chain);
-                address _tokenPayment = address(0);
+                address _tokenPayment = 0x48156d3EA56bb4F120b1a942Cea061AbbA9fb989;
 
         uint64 chainIdThis = 14767482510784806043;
         uint64 chainIdMaster = 16015286601757825753;
@@ -177,7 +177,7 @@ contract DeployCrossLinkBscTestnet is Script, CCIPHelper {
         vm.startBroadcast(deployerPrivateKey);
 
         (address router, , , ) = getConfigFromNetwork(chain);
-        address _tokenPayment = address(0);
+        address _tokenPayment = 0x7794DECEb421974aD5f61Cd04699715CAeb10638;
         
         uint64 chainIdThis = 13264668187771770619;
         uint64 chainIdMaster = 16015286601757825753;
