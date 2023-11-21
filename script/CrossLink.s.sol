@@ -224,8 +224,8 @@ contract DistributeLink is Script, CCIPHelper {
     }
 }
 
-contract Listing is Script, CCIPHelper {
-    function run(address payable to, address tokenAddress, uint256 tokenId, uint256 price) external {
+contract Marketplace is Script, CCIPHelper {
+    function listing(address payable to, address tokenAddress, uint256 tokenId, uint256 price) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
@@ -233,4 +233,14 @@ contract Listing is Script, CCIPHelper {
 
         vm.stopBroadcast();
     }
+
+    function buy(address payable to, CrossLinkMarketplace.SaleType saleType, uint64[] memory bestRoutes, address tokenAddress, uint256 tokenId) external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        CrossLinkMarketplace(to).buy(saleType, bestRoutes, tokenAddress, tokenId);
+
+        vm.stopBroadcast();
+    }
+
 }
