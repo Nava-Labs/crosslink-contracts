@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import {TokenProxy_Destination , ERC20} from "../proxy/TokenProxy_Destination.sol";
 
-contract BridgedCoffee is ERC20, TokenProxy_Destination {
+contract BridgedCrosslink is ERC20, TokenProxy_Destination {
     constructor(
         string memory name, 
         string memory symbol, 

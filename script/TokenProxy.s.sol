@@ -2,7 +2,7 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "./CCIPHelper.sol";
-import {BridgedCoffee} from "../src/token/BridgedCoffee.sol";
+import {BridgedCrosslink} from "../src/token/BridgedCrosslink.sol";
 import {TokenProxy_Source} from "../src/proxy/TokenProxy_Source.sol";
 import {SimpleERC20} from "../src/token/SimpleERC20.sol";
 
@@ -31,18 +31,18 @@ contract DeployTokenProxySourceAsSourceInSepolia is Script, CCIPHelper {
     }
 }
 
-contract DeployBridgedCoffeeAsDestinationInOPGoerli is Script, CCIPHelper {
+contract DeployBridgedCrosslinkAsDestinationInOPGoerli is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged COFFEE";
-        string memory symbol = "BisCoff";
+        string memory name = "Bridged Cross Link";
+        string memory symbol = "BCL";
         uint64 chainIdOPGoerli = 2664363617261496610;
 
-        BridgedCoffee _bridgedCoffee = new BridgedCoffee(
+       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
             name,
             symbol,
             router,
@@ -50,26 +50,26 @@ contract DeployBridgedCoffeeAsDestinationInOPGoerli is Script, CCIPHelper {
         );
 
         console.log(
-            "Bridged Coffee in OP Goerli deployed with address: ",
-            address(_bridgedCoffee)
+            "Bridged Crosslink in OP Goerli deployed with address: ",
+            address(_bridgedCrosslink)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract DeployBridgedCoffeeAsDestinationInFuji is Script, CCIPHelper {
+contract DeployBridgedCrosslinkAsDestinationInFuji is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged COFFEE";
-        string memory symbol = "BisCoff";
+        string memory name = "Bridged Cross Link";
+        string memory symbol = "BCL";
         uint64 chainIdFuji = 14767482510784806043;
 
-        BridgedCoffee _bridgedCoffee = new BridgedCoffee(
+       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
             name,
             symbol,
             router,
@@ -77,26 +77,26 @@ contract DeployBridgedCoffeeAsDestinationInFuji is Script, CCIPHelper {
         );
 
         console.log(
-            "Bridged Coffee in AV Fuji deployed with address: ",
-            address(_bridgedCoffee)
+            "Bridged Crosslink in AV Fuji deployed with address: ",
+            address(_bridgedCrosslink)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract DeployBridgedCoffeeAsDestinationInArbitrumGoerli is Script, CCIPHelper {
+contract DeployBridgedCrosslinkAsDestinationInArbitrumGoerli is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged COFFEE";
-        string memory symbol = "BisCoff";
+        string memory name = "Bridged Cross Link";
+        string memory symbol = "BCL";
         uint64 chainIdArbitrumGoerli = 6101244977088475029;
 
-        BridgedCoffee _bridgedCoffee = new BridgedCoffee(
+       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
             name,
             symbol,
             router,
@@ -104,26 +104,26 @@ contract DeployBridgedCoffeeAsDestinationInArbitrumGoerli is Script, CCIPHelper 
         );
 
         console.log(
-            "Bridged Coffee in Arbitrum Goerli deployed with address: ",
-            address(_bridgedCoffee)
+            "Bridged Crosslink in Arbitrum Goerli deployed with address: ",
+            address(_bridgedCrosslink)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract DeployBridgedCoffeeAsDestinationInPolygonMumbai is Script, CCIPHelper {
+contract DeployBridgedCrosslinkAsDestinationInPolygonMumbai is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged COFFEE";
-        string memory symbol = "BisCoff";
+        string memory name = "Bridged Cross Link";
+        string memory symbol = "BCL";
         uint64 chainIdPolygonMumbai = 12532609583862916517;
 
-        BridgedCoffee _bridgedCoffee = new BridgedCoffee(
+       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
             name,
             symbol,
             router,
@@ -131,8 +131,62 @@ contract DeployBridgedCoffeeAsDestinationInPolygonMumbai is Script, CCIPHelper {
         );
 
         console.log(
-            "Bridged Coffee in Polygon Mumbai deployed with address: ",
-            address(_bridgedCoffee)
+            "Bridged Crosslink in Polygon Mumbai deployed with address: ",
+            address(_bridgedCrosslink)
+        );
+
+        vm.stopBroadcast();
+    }
+}
+
+contract DeployBridgedCrosslinkAsDestinationInBaseGoerli is Script, CCIPHelper {
+    function run(SupportedNetworks chain) external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        (address router, , ,) = getConfigFromNetwork(chain);
+
+        string memory name = "Bridged Cross Link";
+        string memory symbol = "BCL";
+        uint64 chainIdBaseGoerli = 5790810961207155433;
+
+       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
+            name,
+            symbol,
+            router,
+            chainIdBaseGoerli
+        );
+
+        console.log(
+            "Bridged Crosslink in Base Goerli deployed with address: ",
+            address(_bridgedCrosslink)
+        );
+
+        vm.stopBroadcast();
+    }
+}
+
+contract DeployBridgedCrosslinkAsDestinationInBSCTestnet is Script, CCIPHelper {
+    function run(SupportedNetworks chain) external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        (address router, , ,) = getConfigFromNetwork(chain);
+
+        string memory name = "Bridged Cross Link";
+        string memory symbol = "BCL";
+        uint64 chainIdBaseGoerli = 13264668187771770619;
+
+       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
+            name,
+            symbol,
+            router,
+            chainIdBaseGoerli
+        );
+
+        console.log(
+            "Bridged Crosslink in Base Goerli deployed with address: ",
+            address(_bridgedCrosslink)
         );
 
         vm.stopBroadcast();
@@ -148,8 +202,8 @@ contract UpdateCrossChainApp is Script, CCIPHelper {
         // Use this if its TokenProxy_Source
         TokenProxy_Source(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
 
-        // Use this if its BridgedCoffee
-        // BridgedCoffee(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
+        // Use this if its Crosslink
+        // Crosslink(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
 
         vm.stopBroadcast();
     }
@@ -177,8 +231,8 @@ contract SendTokenBridgeToAnotherChain is Script, CCIPHelper{
         // Use this if its TokenProxy_Source
         // TokenProxy_Source(tokenProxy).lockAndMint(bestRoutes, tokenReceiver, amount);
 
-        // Use this if its BridgedCoffee
-        BridgedCoffee(tokenProxy).burnAndMintOrUnlock(bestRoutes, tokenReceiver, amount);
+        // Use this if its BridgedCrosslink
+        BridgedCrosslink(tokenProxy).burnAndMintOrUnlock(bestRoutes, tokenReceiver, amount);
 
         vm.stopBroadcast();
     }
