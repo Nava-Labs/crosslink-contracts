@@ -68,7 +68,7 @@ abstract contract CCIPDirectory {
             crossChainApp: 0x0000000000000000000000000000000000000000
         });
 
-        //BSC
+        // Bsc Testnet
         _crossChainMetadataAddress[13264668187771770619] = CrossChainMetadataAddress ({
             chainIdSelector: 13264668187771770619,
             ccipRouter: 0x9527E2d01A3064ef6b50c1Da1C0cC523803BCFF2,
