@@ -79,38 +79,38 @@ abstract contract CCIPDirectory {
         return _crossChainMetadataAddress[chainIdSelector];
     }
 
-    function getAllNetworks() public view returns (CrossChainMetadataAddress[4] memory) {
-        uint64[4] memory chainIdsSelector = [
+    function getAllNetworks() public view returns (CrossChainMetadataAddress[3] memory) {
+        uint64[3] memory chainIdsSelector = [
             16015286601757825753, // Sepolia
             // 2664363617261496610, // OP Goerli
             14767482510784806043, // Fuji
             // 6101244977088475029, // Arbitrum Testnet
-            12532609583862916517, // PolygonMumbai
+            // 12532609583862916517, // PolygonMumbai
             5790810961207155433 // BaseGoerli
         ];
 
-        CrossChainMetadataAddress[4] memory allChainsData;
+        CrossChainMetadataAddress[3] memory allChainsData;
 
-        for (uint8 i = 0; i < 4; i++) {
+        for (uint8 i = 0; i < 3; i++) {
             allChainsData[i] = getConfigFromNetwork(chainIdsSelector[i]);
         }
 
         return allChainsData;
     }
 
-    function getAllNetworksConfig() public view returns (CrossChainMetadataAddress[4] memory) {
-        uint64[4] memory chainIdsSelector = [
+    function getAllNetworksConfig() public view returns (CrossChainMetadataAddress[3] memory) {
+        uint64[3] memory chainIdsSelector = [
             16015286601757825753, // Sepolia
             // 2664363617261496610, // OP Goerli
             14767482510784806043, // Fuji
             // 6101244977088475029, // Arbitrum Testnet
-            12532609583862916517, // PolygonMumbai
+            // 12532609583862916517, // PolygonMumbai
             5790810961207155433 // BaseGoerli
         ];
 
-        CrossChainMetadataAddress[4] memory allChainsData;
+        CrossChainMetadataAddress[3] memory allChainsData;
 
-        for (uint8 i = 0; i < 4; i++) {
+        for (uint8 i = 0; i < 3; i++) {
             allChainsData[i] = getConfigFromNetwork(chainIdsSelector[i]);
         }
 
