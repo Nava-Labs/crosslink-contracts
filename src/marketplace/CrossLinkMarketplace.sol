@@ -21,6 +21,8 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
 
     address immutable public tokenPayment;
 
+    event SuccessTransferAfterDecode(bool);
+
     enum SaleType {
         Native,
         CrossChain
@@ -69,7 +71,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
     receive() external payable {}   
 
     function listing(address tokenAddress, uint256 tokenId, uint256 _price) external {
-        IERC721(tokenAddress).safeTransferFrom(msg.sender, address(this), tokenId);
+        // IERC721(tokenAddress).safeTransferFrom(msg.sender, address(this), tokenId);
 
         _listingDetails[tokenAddress][tokenId] = ListingDetails ({
             chainIdSelector: chainIdThis,
@@ -77,8 +79,8 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             price: _price
         });
 
-        bytes memory data = _encodeListingData(tokenAddress, tokenId);
-        _syncData(data);
+        bytes memory encodedListingMessage = _encodeListingData(tokenAddress, tokenId);
+        _syncData(encodedListingMessage);
 
         emit Listing(chainIdThis, msg.sender, tokenAddress, tokenId, _price);
     }
@@ -95,7 +97,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             price: 0
         });
 
-        IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
+        // IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
 
         bytes memory data = _encodeListingData(tokenAddress, tokenId);
         _syncData(data);
@@ -119,7 +121,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
 
         if (saleType == SaleType.Native) {
             IERC20(tokenPayment).transferFrom(msg.sender, _listedBy, _listingPrice);
-            IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
+            // IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
 
             emit Sale(SaleType.Native, chainIdThis, tokenAddress, msg.sender, _listedBy, tokenId, _listingPrice);
         } else {
@@ -130,9 +132,9 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             _syncData(delistNftData);
 
             // move nft & turn on the multihop 
-            bytes memory data = _encodeCrossChainSaleData(tokenAddress, tokenId, msg.sender);
+            bytes memory encodedSaleMessage = _encodeSaleData(tokenAddress, tokenId, msg.sender);
             bytes[] memory _appMessage = new bytes[](1);
-            _appMessage[0] = abi.encodeWithSelector("_decodeAndTransferCrossChainBuy(bytes)", data);
+            _appMessage[0] = encodedSaleMessage;
             _executeAndForwardMessage(bestRoutes, _appMessage);
 
             if (chainIdThis == chainIdMaster) {
@@ -140,7 +142,6 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             } else {
                 ITokenProxyDestination(tokenPayment).burnAndMintOrUnlock(bestRoutes, _listedBy,_listingPrice);
             }
-
 
             emit Sale(SaleType.Native, chainIdThis, tokenAddress, msg.sender, detail.listedBy, tokenId, detail.price);
         }
@@ -162,7 +163,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         (tokenAddress, tokenId, detail) = abi.decode(data, (address, uint256, ListingDetails));
     }
 
-    function _encodeCrossChainSaleData(address tokenAddress, uint256 tokenId, address _newOwner) internal view returns (bytes memory) {
+    function _encodeSaleData(address tokenAddress, uint256 tokenId, address _newOwner) internal view returns (bytes memory) {
         CrossChainSale memory _crossChainSale = CrossChainSale ({
             chainIdSelector: chainIdThis,
             newOwner: _newOwner
@@ -170,24 +171,15 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         return abi.encode(tokenAddress, tokenId, _listingDetails[tokenAddress][tokenId], _crossChainSale);
     }
 
-    function _decodeAndTransferCrossChainBuy(bytes memory data) internal {
-        (address tokenAddress, uint256 tokenId, , CrossChainSale memory ccSale) = abi.decode(data, (address, uint256, ListingDetails, CrossChainSale));
-        _transferNftToBuyer(tokenAddress, ccSale.newOwner, tokenId);
+    function _decodeSaleData(bytes memory data) internal pure returns (address tokenAddress, uint256 tokenId, CrossChainSale memory ccSale) {
+        (tokenAddress, tokenId, , ccSale) = abi.decode(data, (address, uint256, ListingDetails, CrossChainSale));
     }
 
-    function _decodeAppMessage(bytes[] memory encodedMessage) internal override {
-        // // handle sync
-        // _sendToMasterOrUpdate(encodedMessage[0]);
-
-        // // or handle buy
-        // (address tokenAddress, uint256 tokenId, , CrossChainSale memory ccSale) = _decodeCrossChainBuy(encodedMessage[1]);
-        // _transferNftToBuyer(tokenAddress, ccSale.newOwner, tokenId);
-
-        for (uint8 i = 0; i <  encodedMessage.length; i++) {
-            (bool success, ) = address(this).call(encodedMessage[i]);
-            if (!success) {
-                ExecutionFailed();
-            }
+    function _executeAppMessage(bytes[] memory encodedMessage) internal override {
+        for (uint8 i = 0; i < encodedMessage.length; i++) {
+            (address tokenAddress, uint256 tokenId, CrossChainSale memory ccSale) = _decodeSaleData(encodedMessage[i]);
+            // _transferNftToBuyer(tokenAddress, ccSale.newOwner, tokenId);
+            emit SuccessTransferAfterDecode(true);
         }
     }
 
