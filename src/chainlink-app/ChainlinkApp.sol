@@ -8,12 +8,12 @@ import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
 import {TrustedSender} from "./TrustedSender.sol";
 
-error UnauthorizedChainSelector();
-error FailedToWithdrawEth(address owner, address target, uint256 value);
-
 abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
+    error UnauthorizedChainSelector();
+    error FailedToWithdrawEth(address owner, address target, uint256 value);
 
     uint64 immutable public chainIdThis;
+    bytes4 constant rootMessageId = 0x524f4f54; // ROOT
 
     event MessageSent(bytes32 messageId, bytes data);
 
@@ -31,9 +31,18 @@ abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
     /********************** Encode & Decode *************************/
     /****************************************************************/
 
-    // function _encodeAppMessage(bytes4 selector, bytes data) internal virtual;
+    function _encodeAppMessage(uint64[] memory bestRoutes, bytes[] memory encodedMessage) internal pure returns (bytes memory) {
+        bytes memory appMessage = abi.encode(bestRoutes, encodedMessage);
+        bytes memory encodedAppMessageWithRootId = abi.encode(rootMessageId, appMessage);
+        return encodedAppMessageWithRootId;
+    }
 
-    function _decodeAppMessage(bytes[] memory encodedMessage) internal virtual;
+    function _decodeAppMessage(bytes memory encodedAppMessage) internal pure returns (uint64[] memory bestRoutes, bytes[] memory encodedMessage) {
+        (, bytes memory appMessage) = abi.decode(encodedAppMessage, (bytes4, bytes));
+        (bestRoutes, encodedMessage) = abi.decode(appMessage, (uint64[], bytes[]));
+    }
+
+    function _executeAppMessage(bytes[] memory data) internal virtual;
 
     /****************************************************************/
     /********************** Execute or Forward **********************/
@@ -46,34 +55,29 @@ abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
             newBestRoutes[i] = bestRoutes[i+1];
         }
 
+        bytes memory encodedMessageWithRootId = _encodeAppMessage(newBestRoutes, encodedMessage);
+
         // Check if already at destination
         if(newBestRoutes.length > 0){
-            bytes memory data = abi.encode(newBestRoutes,encodedMessage);
-
             // Send message
             uint64 chainIdNext = newBestRoutes[0];
             CrossChainMetadataAddress memory _metadataChainThis = getConfigFromNetwork(chainIdNext);
 
-            _sendMessage(chainIdNext, _metadataChainThis.crossChainApp, data);
-
-        }else{
-            _decodeAppMessage(encodedMessage);
+            _sendMessage(chainIdNext, _metadataChainThis.crossChainApp, encodedMessageWithRootId);
+        } else {
+            ( , bytes[] memory _encodedMessage) = _decodeAppMessage(encodedMessageWithRootId);
+            _executeAppMessage(_encodedMessage);   
         }
     }
 
-    function _sendMessage(uint64 toChain, address receiver, bytes memory data) internal returns (bytes32 messageId) {
+    function _sendMessage(uint64 toChain, address receiver, bytes memory data) internal virtual returns (bytes32 messageId) {
         CrossChainMetadataAddress memory _metadataChainThis = getConfigFromNetwork(chainIdThis);
-
-        Client.EVMExtraArgsV1 memory _extraArgs = Client.EVMExtraArgsV1 ({
-          gasLimit: 2_000_000,
-          strict: true
-        });
 
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(receiver),
             data: data,
             tokenAmounts: new Client.EVMTokenAmount[](0),
-            extraArgs: Client._argsToBytes(_extraArgs),
+            extraArgs: "",
             feeToken: _metadataChainThis.linkToken
         });
 
@@ -88,7 +92,7 @@ abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
 
     function _ccipReceive(
         Client.Any2EVMMessage memory message
-    ) internal override{
+    ) internal virtual override {
         uint64 sourceChainSelector = message.sourceChainSelector; // fetch the source chain identifier (aka selector)
         address sender = abi.decode(message.sender, (address)); // abi-decoding of the sender address
 
@@ -97,8 +101,7 @@ abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
             revert UnauthorizedChainSelector();
         }
         
-        (uint64[] memory bestRoutes , bytes[] memory encodedMessage) = abi.decode(message.data,(uint64[], bytes[]));
-        
+        (uint64[] memory bestRoutes, bytes[] memory encodedMessage) = _decodeAppMessage(message.data);
         _executeAndForwardMessage(bestRoutes, encodedMessage);
 
         emit MessageReceived(message.messageId, message.data);

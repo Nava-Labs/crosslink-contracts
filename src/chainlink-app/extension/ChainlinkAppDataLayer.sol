@@ -5,8 +5,9 @@ import {Client, IRouterClient, ChainlinkApp} from "../ChainlinkApp.sol";
 
 abstract contract ChainlinkAppDataLayer is ChainlinkApp {
     uint64 immutable public chainIdMaster;
+    bytes4 constant syncMessageId = 0x53594e43; // SYNC
 
-    uint256 public latestSyncTime;
+    uint256 public latestSyncTimestamp;
 
     event SyncDataMessage(bytes32 messageId, bytes data);
 
@@ -14,26 +15,33 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
         chainIdMaster = _chainIdMaster;
     }
 
-    // add this function to your ccipReceive
     function _sendToMasterOrUpdate(
-        bytes memory data
+        bytes memory encodedMessageWithExtensionId
     ) internal {
-        (uint64[] memory bestRoutes, uint64 _chainIdOrigin, bytes memory _data, uint256 _latestSyncTime) = abi.decode(data[4:], (uint64[], uint64, bytes, uint256));
+        (uint64 chainIdOrigin, bytes memory encodedMessage, uint256 latestSyncTime) = _decodeSyncMessageWithExtensionId(encodedMessageWithExtensionId);
 
-        if (chainIdThis != chainIdMaster && _chainIdOrigin != chainIdMaster) {
-            _sendToMaster(data);
+        if (chainIdThis != chainIdMaster && chainIdOrigin != chainIdMaster) {
+            _sendToMaster(encodedMessageWithExtensionId);
         }  else if (chainIdThis == chainIdMaster) {
-            bytes memory encodedDataWithMasterOrigin = abi.encode(bestRoutes, chainIdMaster, _data, _latestSyncTime);
-            bytes memory encodedDataWithMasterOriginWithSelector = abi.encodeWithSignature("_sendToMasterOrUpdate(bytes)", encodedDataWithMasterOrigin);
-            _storeData(_data);
-            latestSyncTime = _latestSyncTime;
-            _distributeSyncData(_chainIdOrigin, encodedDataWithMasterOriginWithSelector); // exclude origin and self
-        } else if (_chainIdOrigin == chainIdMaster) {
-            _storeData(_data);
-            latestSyncTime = _latestSyncTime;
+            bytes memory encodedMessageWithMasterOrigin = abi.encode(chainIdMaster, encodedMessage, latestSyncTime);
+            bytes memory encodedSyncMessageWithExtensionIdWithMasterOrigin = _encodeSyncMessageWithExtensionId(encodedMessageWithMasterOrigin);
+            _storeData(encodedMessage);
+            _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtensionIdWithMasterOrigin); // exclude origin and self
+        } else if (chainIdOrigin == chainIdMaster) {
+            _storeData(encodedMessage);
         }
 
-        latestSyncTime = block.timestamp;
+        latestSyncTimestamp = block.timestamp;
+    }
+
+    function _encodeSyncMessageWithExtensionId(bytes memory encodedMessageWithMasterOrigin) internal pure returns (bytes memory encodedMessageWithExtensionId) {
+        bytes memory encodedMessageWithWithExtensionIdAndMasterOrigin = abi.encode(syncMessageId, encodedMessageWithMasterOrigin);
+        return encodedMessageWithWithExtensionIdAndMasterOrigin;
+    }
+
+    function _decodeSyncMessageWithExtensionId(bytes memory encodedMessageWithExtensionId) internal pure returns (uint64 chainIdOrigin, bytes memory encodedMessage, uint256 latestSyncTime) {
+        (, bytes memory syncMessage) = abi.decode(encodedMessageWithExtensionId, (bytes4, bytes));
+        (chainIdOrigin, encodedMessage, latestSyncTime) = abi.decode(syncMessage, (uint64, bytes, uint256));
     }
 
     function _sendToMaster(bytes memory data) private returns (bytes32 messageId) {        
@@ -41,39 +49,40 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
         messageId = _sendMessage(chainIdMaster, _metadataChainMaster.crossChainApp, data);
    }
 
-    // function _sendMessage(uint64 toChain, address receiver, bytes memory data) internal returns (bytes32 messageId) {
-    //     CrossChainMetadataAddress memory _metadataChainThis = getConfigFromNetwork(chainIdThis);
+    function _sendMessage(uint64 toChain, address receiver, bytes memory data) internal override returns (bytes32 messageId) {
+        CrossChainMetadataAddress memory _metadataChainThis = getConfigFromNetwork(chainIdThis);
 
-    //     Client.EVMExtraArgsV1 memory _extraArgs = Client.EVMExtraArgsV1 ({
-    //       gasLimit: 2_000_000,
-    //       strict: true
-    //     });
+        Client.EVMExtraArgsV1 memory _extraArgs = Client.EVMExtraArgsV1 ({
+          gasLimit: 2_000_000,
+          strict: true
+        });
 
-    //     Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-    //         receiver: abi.encode(receiver),
-    //         data: data,
-    //         tokenAmounts: new Client.EVMTokenAmount[](0),
-    //         extraArgs: Client._argsToBytes(_extraArgs),
-    //         feeToken: _metadataChainThis.linkToken
-    //     });
+        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+            receiver: abi.encode(receiver),
+            data: data,
+            tokenAmounts: new Client.EVMTokenAmount[](0),
+            extraArgs: Client._argsToBytes(_extraArgs),
+            feeToken: _metadataChainThis.linkToken
+        });
 
-    //     messageId = IRouterClient(_metadataChainThis.ccipRouter).ccipSend(
-    //         toChain,
-    //         message
-    //     );
+        messageId = IRouterClient(_metadataChainThis.ccipRouter).ccipSend(
+            toChain,
+            message
+        );
 
-    //     emit SyncDataMessage(messageId, data);        
-    // }
+        emit SyncDataMessage(messageId, data);        
+    }
 
-    function _syncData(bytes memory data) internal {
-        bytes memory _data = abi.encodeWithSignature("_sendToMasterOrUpdate(bytes)", data);
-        _sendToMasterOrUpdate(_data);
+    function _syncData(bytes memory encodedMessage) internal {
+        bytes memory syncMessage = abi.encode(chainIdThis, encodedMessage, block.timestamp);
+        bytes memory encodedMessageWithExtensionId = abi.encode(syncMessageId, syncMessage);
+        _sendToMasterOrUpdate(encodedMessageWithExtensionId);
     }
 
     function _storeData(bytes memory data) internal virtual;
 
     function _distributeSyncData(uint64 excludedChain, bytes memory data) private {
-        CrossChainMetadataAddress[4] memory _metadatas = getAllNetworks(); 
+        CrossChainMetadataAddress[3] memory _metadatas = getAllNetworks(); 
 
         // always exclude sepolia for duplication while storing data
         for(uint8 i = 1; i < _metadatas.length; i++) {
@@ -81,5 +90,28 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
                 _sendMessage(_metadatas[i].chainIdSelector, _metadatas[i].crossChainApp, data);    
             }
         }
+    }
+
+    function _ccipReceive(
+        Client.Any2EVMMessage memory message
+    ) internal override {
+        uint64 sourceChainSelector = message.sourceChainSelector; // fetch the source chain identifier (aka selector)
+        address sender = abi.decode(message.sender, (address)); // abi-decoding of the sender address
+
+        // Trusted Sender check
+        if (!isTrustedSender(sourceChainSelector,sender)) {
+            revert UnauthorizedChainSelector();
+        }
+        
+        (bytes4 messageId, ) = abi.decode(message.data, (bytes4, bytes));
+        
+        if (messageId == syncMessageId) {
+            _sendToMasterOrUpdate(message.data);
+        } else {
+            (uint64[] memory bestRoutes, bytes[] memory data) = _decodeAppMessage(message.data);
+            _executeAndForwardMessage(bestRoutes, data);
+        }
+
+        emit MessageReceived(message.messageId, message.data);
     }
 }
