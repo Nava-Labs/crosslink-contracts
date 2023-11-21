@@ -31,7 +31,7 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
             _storeData(encodedMessage);
         }
 
-        latestSyncTimestamp = block.timestamp;
+        latestSyncTimestamp = latestSyncTime;
     }
 
     function _encodeSyncMessageWithExtensionId(bytes memory encodedMessageWithMasterOrigin) internal pure returns (bytes memory encodedMessageWithExtensionId) {
