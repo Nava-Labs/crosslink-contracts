@@ -41,7 +41,7 @@ abstract contract TokenProxy_Destination is ChainlinkApp, ERC20 {
         emit Unlock(msg.sender, amount);
     }
 
-    function _decodeAppMessage(bytes[] memory encodedMessage) internal override{
+    function _executeAppMessage(bytes[] memory encodedMessage) internal override {
         for(uint256 i = 0; i < encodedMessage.length; i++){
             (address tokenReceiver , uint256 amount) = abi.decode(encodedMessage[i],(address,uint256));
 

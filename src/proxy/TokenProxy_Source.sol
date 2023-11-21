@@ -36,13 +36,13 @@ contract TokenProxy_Source is ChainlinkApp {
 
     receive() external payable {}
 
-    function lockAndMint(uint64[] memory bestRoutes ,address tokenReceiver, uint256 amount) external virtual {
+    function lockAndMint(uint64[] memory bestRoutes, address tokenReceiver, uint256 amount) external virtual {
         // lock the real token
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
 
         // Encode tokenReceiver & Amount
         bytes[] memory encodedMessage = new bytes[](1);
-        encodedMessage[0] = abi.encode(tokenReceiver,amount);
+        encodedMessage[0] = abi.encode(tokenReceiver, amount);
 
         // ccip send for triggering mint in dest chain
         _executeAndForwardMessage(bestRoutes, encodedMessage);
@@ -50,7 +50,7 @@ contract TokenProxy_Source is ChainlinkApp {
         emit Lock(msg.sender, amount);
     }
 
-    function _decodeAppMessage(bytes[] memory encodedMessage) internal override{
+    function _executeAppMessage(bytes[] memory encodedMessage) internal override {
         for(uint256 i = 0; i < encodedMessage.length; i++){
             (address tokenReceiver , uint256 amount) = abi.decode(encodedMessage[i],(address,uint256));
 
