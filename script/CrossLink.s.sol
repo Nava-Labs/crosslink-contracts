@@ -171,6 +171,33 @@ contract DeployCrossLinkBaseGoerli is Script, CCIPHelper {
     }
 }
 
+contract DeployCrossLinkBscTestnet is Script, CCIPHelper {
+    function run(SupportedNetworks chain) external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        (address router, , , ) = getConfigFromNetwork(chain);
+        address _tokenPayment = address(0);
+        
+        uint64 chainIdThis = 13264668187771770619;
+        uint64 chainIdMaster = 16015286601757825753;
+
+        CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
+            chainIdThis,
+            chainIdMaster,
+            router,
+            _tokenPayment
+        );
+
+        console.log(
+            "CrossLink contract deployed on with address: ",
+            address(_marketplace)
+        );
+
+        vm.stopBroadcast();
+    }
+}
+
 
 contract UpdateCrossChainApp is Script, CCIPHelper {
     function run(address payable marketplace, uint64[] memory chainSelector, address[] memory crossChainAppAddress) external {
