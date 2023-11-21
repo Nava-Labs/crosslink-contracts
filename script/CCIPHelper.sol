@@ -58,7 +58,7 @@ contract CCIPHelper {
     address constant linkPolygonMumbai =
         0x326C977E6efc84E512bB9C30f76E30c160eD06FB;
     address constant linkBaseGoerli =
-        0x6D0F8D488B669aa9BA2D0f0b7B75a88bf5051CD3;
+        0xD886E2286Fd1073df82462ea1822119600Af80b6;
     address constant linkBSCTest =
         0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06;
 
