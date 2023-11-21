@@ -82,7 +82,7 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
     function _storeData(bytes memory data) internal virtual;
 
     function _distributeSyncData(uint64 excludedChain, bytes memory data) private {
-        CrossChainMetadataAddress[3] memory _metadatas = getAllNetworks(); 
+        CrossChainMetadataAddress[4] memory _metadatas = getAllNetworks(); 
 
         // always exclude sepolia for duplication while storing data
         for(uint8 i = 1; i < _metadatas.length; i++) {

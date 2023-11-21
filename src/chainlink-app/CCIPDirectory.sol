@@ -16,6 +16,7 @@ abstract contract CCIPDirectory {
     // uint64 constant chainIdAvalancheFuji = 14767482510784806043;
     // uint64 constant chainIdArbitrumTestnet = 6101244977088475029;
     // uint64 constant chainIdPolygonMumbai = 12532609583862916517;
+    // uint64 constant chainIdBSCTesnet = 13264668187771770619
     mapping(uint64 => CrossChainMetadataAddress) internal _crossChainMetadataAddress;
 
     constructor() {
@@ -66,6 +67,14 @@ abstract contract CCIPDirectory {
             linkToken: 0xD886E2286Fd1073df82462ea1822119600Af80b6,
             crossChainApp: 0x0000000000000000000000000000000000000000
         });
+
+        //BSC
+        _crossChainMetadataAddress[13264668187771770619] = CrossChainMetadataAddress ({
+            chainIdSelector: 13264668187771770619,
+            ccipRouter: 0x9527E2d01A3064ef6b50c1Da1C0cC523803BCFF2,
+            linkToken: 0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06,
+            crossChainApp: 0x0000000000000000000000000000000000000000
+        });
         
     }
 
@@ -79,38 +88,40 @@ abstract contract CCIPDirectory {
         return _crossChainMetadataAddress[chainIdSelector];
     }
 
-    function getAllNetworks() public view returns (CrossChainMetadataAddress[3] memory) {
-        uint64[3] memory chainIdsSelector = [
+    function getAllNetworks() public view returns (CrossChainMetadataAddress[4] memory) {
+        uint64[4] memory chainIdsSelector = [
             16015286601757825753, // Sepolia
-            // 2664363617261496610, // OP Goerli
+            2664363617261496610, // OP Goerli
             14767482510784806043, // Fuji
             // 6101244977088475029, // Arbitrum Testnet
             // 12532609583862916517, // PolygonMumbai
-            5790810961207155433 // BaseGoerli
+            // 5790810961207155433, // BaseGoerli
+            13264668187771770619 // BSC
         ];
 
-        CrossChainMetadataAddress[3] memory allChainsData;
+        CrossChainMetadataAddress[4] memory allChainsData;
 
-        for (uint8 i = 0; i < 3; i++) {
+        for (uint8 i = 0; i < 4; i++) {
             allChainsData[i] = getConfigFromNetwork(chainIdsSelector[i]);
         }
 
         return allChainsData;
     }
 
-    function getAllNetworksConfig() public view returns (CrossChainMetadataAddress[3] memory) {
-        uint64[3] memory chainIdsSelector = [
+    function getAllNetworksConfig() public view returns (CrossChainMetadataAddress[4] memory) {
+        uint64[4] memory chainIdsSelector = [
             16015286601757825753, // Sepolia
-            // 2664363617261496610, // OP Goerli
+            2664363617261496610, // OP Goerli
             14767482510784806043, // Fuji
             // 6101244977088475029, // Arbitrum Testnet
             // 12532609583862916517, // PolygonMumbai
-            5790810961207155433 // BaseGoerli
+            // 5790810961207155433, // BaseGoerli
+            13264668187771770619 // BSC
         ];
 
-        CrossChainMetadataAddress[3] memory allChainsData;
+        CrossChainMetadataAddress[4] memory allChainsData;
 
-        for (uint8 i = 0; i < 3; i++) {
+        for (uint8 i = 0; i < 4; i++) {
             allChainsData[i] = getConfigFromNetwork(chainIdsSelector[i]);
         }
 

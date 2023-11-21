@@ -9,7 +9,8 @@ contract CCIPHelper {
         AVALANCHE_FUJI,
         ARBITRUM_GOERLI,
         POLYGON_MUMBAI,
-        BASE_GOERLI
+        BASE_GOERLI,
+        BSC_TEST
     }
 
     mapping(SupportedNetworks enumValue => string humanReadableName)
@@ -27,6 +28,7 @@ contract CCIPHelper {
     uint64 constant chainIdArbitrumTestnet = 6101244977088475029;
     uint64 constant chainIdPolygonMumbai = 12532609583862916517;
     uint64 constant chainIdBaseGoerli = 5790810961207155433;
+    uint64 constant chainIdBSCTest = 13264668187771770619;
 
     // Router addresses
     address constant routerEthereumSepolia =
@@ -41,6 +43,8 @@ contract CCIPHelper {
         0x70499c328e1E2a3c41108bd3730F6670a44595D1;
     address constant routerBaseGoerli=
         0xA8C0c11bf64AF62CDCA6f93D3769B88BdD7cb93D;
+    address constant routerBSCTest = 
+        0x9527E2d01A3064ef6b50c1Da1C0cC523803BCFF2;
 
     // Link addresses (can be used as fee)
     address constant linkEthereumSepolia =
@@ -53,8 +57,10 @@ contract CCIPHelper {
         0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28;
     address constant linkPolygonMumbai =
         0x326C977E6efc84E512bB9C30f76E30c160eD06FB;
-    address constant linkBaseGoerli=
+    address constant linkBaseGoerli =
         0x6D0F8D488B669aa9BA2D0f0b7B75a88bf5051CD3;
+    address constant linkBSCTest =
+        0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06;
 
     // Wrapped native addresses
     address constant wethEthereumSepolia =
@@ -69,6 +75,8 @@ contract CCIPHelper {
         0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889;
     address constant wethBaseGoerli =
         0x4200000000000000000000000000000000000006;
+    address constant wbnbBSCTest = 
+        0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
 
 
     // CCIP-BnM addresses
@@ -82,7 +90,9 @@ contract CCIPHelper {
         0xD21341536c5cF5EB1bcb58f6723cE26e8D8E90e4;
     address constant ccipBnMPolygonMumbai =
         0xf1E3A5842EeEF51F2967b3F05D45DD4f4205FF40;
-    address constant ccipBnMBaseGoerli=
+    address constant ccipBnMBaseGoerli =
+        0xf1E3A5842EeEF51F2967b3F05D45DD4f4205FF40;
+    address constant ccipBnMBSCTest =
         0xf1E3A5842EeEF51F2967b3F05D45DD4f4205FF40;
 
 
@@ -99,6 +109,8 @@ contract CCIPHelper {
         0xc1c76a8c5bFDE1Be034bbcD930c668726E7C1987;
     address constant clCcipLnMBaseGoerli=
         0xc1c76a8c5bFDE1Be034bbcD930c668726E7C1987;
+    address constant clCcipLnMBSCTest =
+        0xc1c76a8c5bFDE1Be034bbcD930c668726E7C1987;
 
 
     constructor() {
@@ -108,6 +120,7 @@ contract CCIPHelper {
         networks[SupportedNetworks.ARBITRUM_GOERLI] = "Arbitrum Goerli";
         networks[SupportedNetworks.POLYGON_MUMBAI] = "Polygon Mumbai";
         networks[SupportedNetworks.BASE_GOERLI] = "Base Goerli";
+        networks[SupportedNetworks.BSC_TEST] = "BSC Testnet";
     }
 
     function getDummyTokensFromNetwork(
@@ -125,6 +138,8 @@ contract CCIPHelper {
             return (ccipBnMPolygonMumbai, clCcipLnMPolygonMumbai);
         } else if (network == SupportedNetworks.BASE_GOERLI) {
             return (ccipBnMBaseGoerli, clCcipLnMBaseGoerli);
+        } else if (network == SupportedNetworks.BSC_TEST){
+            return(ccipBnMBSCTest,clCcipLnMBSCTest);
         }
     }
 
@@ -181,6 +196,13 @@ contract CCIPHelper {
                 linkBaseGoerli,
                 wethBaseGoerli,
                 chainIdBaseGoerli
+            );
+        } else if (network == SupportedNetworks.BSC_TEST) {
+            return (
+                routerBSCTest,
+                linkBSCTest,
+                wbnbBSCTest,
+                chainIdBSCTest
             );
         }
     }
