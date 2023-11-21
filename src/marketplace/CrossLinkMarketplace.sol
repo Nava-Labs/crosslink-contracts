@@ -21,8 +21,6 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
 
     address immutable public tokenPayment;
 
-    event SuccessTransferAfterDecode(bool);
-
     enum SaleType {
         Native,
         CrossChain
@@ -50,8 +48,9 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
 
     event Sale(
         SaleType indexed saleType,
-        uint64 indexed paymentChainIdSelector,
         address indexed tokenAddress, 
+        uint64 saleChainIdSelector,
+        uint64 originChainIdSelector,
         address newOwner,
         address prevOwner, 
         uint256 tokenId,
@@ -71,7 +70,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
     receive() external payable {}   
 
     function listing(address tokenAddress, uint256 tokenId, uint256 _price) external {
-        // IERC721(tokenAddress).safeTransferFrom(msg.sender, address(this), tokenId);
+        IERC721(tokenAddress).safeTransferFrom(msg.sender, address(this), tokenId);
 
         _listingDetails[tokenAddress][tokenId] = ListingDetails ({
             chainIdSelector: chainIdThis,
@@ -119,19 +118,20 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             price: 0
         });
 
+        // sync data listed
+        bytes memory delistNftData = _encodeListingData(tokenAddress, tokenId);
+        _syncData(delistNftData);
+
         if (saleType == SaleType.Native) {
             IERC20(tokenPayment).transferFrom(msg.sender, _listedBy, _listingPrice);
-            // IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
+            IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
 
-            emit Sale(SaleType.Native, chainIdThis, tokenAddress, msg.sender, _listedBy, tokenId, _listingPrice);
+            emit Sale(SaleType.Native, tokenAddress, chainIdThis, chainIdThis, msg.sender, _listedBy, tokenId, _listingPrice);
+
         } else {
             ListingDetails memory detail = _listingDetails[tokenAddress][tokenId];
           
-            // sync data listed
-            bytes memory delistNftData = _encodeListingData(tokenAddress, tokenId);
-            _syncData(delistNftData);
-
-            // move nft & turn on the multihop 
+            // Move nft & execute in multihop 
             bytes memory encodedSaleMessage = _encodeSaleData(tokenAddress, tokenId, msg.sender);
             bytes[] memory _appMessage = new bytes[](1);
             _appMessage[0] = encodedSaleMessage;
@@ -143,7 +143,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
                 ITokenProxyDestination(tokenPayment).burnAndMintOrUnlock(bestRoutes, _listedBy,_listingPrice);
             }
 
-            emit Sale(SaleType.Native, chainIdThis, tokenAddress, msg.sender, detail.listedBy, tokenId, detail.price);
+            emit Sale(SaleType.Native, tokenAddress, chainIdThis, detail.chainIdSelector, msg.sender, detail.listedBy, tokenId, detail.price);
         }
     }
 
@@ -178,8 +178,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
     function _executeAppMessage(bytes[] memory encodedMessage) internal override {
         for (uint8 i = 0; i < encodedMessage.length; i++) {
             (address tokenAddress, uint256 tokenId, CrossChainSale memory ccSale) = _decodeSaleData(encodedMessage[i]);
-            // _transferNftToBuyer(tokenAddress, ccSale.newOwner, tokenId);
-            emit SuccessTransferAfterDecode(true);
+            _transferNftToBuyer(tokenAddress, ccSale.newOwner, tokenId);
         }
     }
 
