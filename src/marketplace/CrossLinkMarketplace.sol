@@ -34,7 +34,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
     mapping(address => mapping(uint256 => ListingDetails)) private _listingDetails; // tokenAddress => tokenId => ListingDetails
 
     struct CrossChainSale {
-        uint64 chainIdSelector;
+        uint64 saleChainIdSelector;
         address newOwner;
     }
 
@@ -110,6 +110,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
     }
 
     function buy(SaleType saleType, uint64[] memory bestRoutes, address tokenAddress, uint256 tokenId) external {    
+        uint64 _chainIdOrigin = _listingDetails[tokenAddress][tokenId].chainIdSelector;
         address _listedBy = _listingDetails[tokenAddress][tokenId].listedBy;
         uint256 _listingPrice = _listingDetails[tokenAddress][tokenId].price;
 
@@ -158,10 +159,10 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             }
 
             emit Sale(
-                SaleType.Native, 
+                SaleType.CrossChain, 
                 tokenAddress, 
                 chainIdThis, 
-                detail.chainIdSelector, 
+                _chainIdOrigin, 
                 msg.sender, 
                 detail.listedBy, 
                 tokenId, 
@@ -188,7 +189,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
 
     function _encodeSaleData(address tokenAddress, uint256 tokenId, address _newOwner) internal view returns (bytes memory) {
         CrossChainSale memory _crossChainSale = CrossChainSale ({
-            chainIdSelector: chainIdThis,
+            saleChainIdSelector: chainIdThis,
             newOwner: _newOwner
         });
         return abi.encode(tokenAddress, tokenId, _listingDetails[tokenAddress][tokenId], _crossChainSale);
@@ -224,5 +225,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
     function _storeData(bytes memory data) internal override {
         (address tokenAddress, uint256 tokenId, ListingDetails memory detail) = _decodeListingData(data);
         _listingDetails[tokenAddress][tokenId] = detail;
+
+        emit Listing(detail.chainIdSelector, detail.listedBy, tokenAddress, tokenId, detail.price);
     }
 }
