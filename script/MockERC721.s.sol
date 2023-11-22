@@ -10,9 +10,9 @@ contract DeployMockERC721 is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         MockERC721 erc721 = new MockERC721(
-            "Mock BAYC",
-            "MBAYC",
-            "ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/"
+            "Skyweaver",
+            "SWR",
+            "https://assets.skyweaver.net/latest/metadata/"
         );
 
         console.log(

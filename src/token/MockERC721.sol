@@ -26,6 +26,17 @@ contract MockERC721 is Ownable, ERC721A {
         baseURI = _uri;
     }
 
+    function tokenURI(uint256 tokenId) 
+        public 
+        view 
+        override 
+        returns (string memory) 
+    {
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
+
+        return bytes(_baseURI()).length != 0 ? string(abi.encodePacked(baseURI, _toString(tokenId), ".json")) : '';
+    }
+
     function mint(uint256 _quantity) external payable {
         _mint(msg.sender, _quantity);
     }
