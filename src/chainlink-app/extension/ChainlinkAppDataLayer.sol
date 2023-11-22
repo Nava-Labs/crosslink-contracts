@@ -10,6 +10,7 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
     uint256 public latestSyncTimestamp;
 
     event SyncDataMessage(bytes32 messageId, bytes data);
+    event GraphSync(bytes data);
 
     constructor(uint64 _chainIdThis, uint64 _chainIdMaster, address _router) ChainlinkApp(_chainIdThis, _router) {
         chainIdMaster = _chainIdMaster;
@@ -22,11 +23,19 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
 
         if (chainIdThis != chainIdMaster && chainIdOrigin != chainIdMaster) {
             _sendToMaster(encodedMessageWithExtensionId);
-        }  else if (chainIdThis == chainIdMaster) {
+        }  else if (chainIdThis == chainIdMaster) {            
             bytes memory encodedMessageWithMasterOrigin = abi.encode(chainIdMaster, encodedMessage, latestSyncTime);
             bytes memory encodedSyncMessageWithExtensionIdWithMasterOrigin = _encodeSyncMessageWithExtensionId(encodedMessageWithMasterOrigin);
-            _storeData(encodedMessage);
-            _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtensionIdWithMasterOrigin); // exclude origin and self
+
+            // avoid doubling storing data if origin == master
+            if (chainIdOrigin == chainIdMaster) {
+                _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtensionIdWithMasterOrigin); // exclude origin and self
+            } else {
+                _storeData(encodedMessage);
+                _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtensionIdWithMasterOrigin); 
+            }
+
+            emit GraphSync(encodedMessage);
         } else if (chainIdOrigin == chainIdMaster) {
             _storeData(encodedMessage);
         }
