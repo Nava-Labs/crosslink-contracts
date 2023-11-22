@@ -13,6 +13,11 @@ interface ITokenProxyDestination {
     function burnAndMintOrUnlock(uint64[] memory bestRoutes ,address tokenReceiver, uint256 amount) external;
 }
 
+interface INFT {
+    function name() external view returns (string memory);
+    function tokenURI(uint256 tokenId) external view returns (string memory); 
+}
+
 error Unauthorized();
 error NotForSale();
 error ExecutionFailed();
@@ -42,7 +47,9 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         uint64 indexed chainIdSelector,
         address indexed ownerAddress, 
         address indexed tokenAddress,
+        string collectionName,
         uint256 tokenId,
+        string tokenURI,
         uint256 price
     );
 
@@ -53,7 +60,9 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         uint64 originChainIdSelector,
         address newOwner,
         address prevOwner, 
+        string collectionName,
         uint256 tokenId,
+        string tokenURI,
         uint256 price
     );
 
@@ -86,7 +95,9 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         bytes memory encodedListingMessage = _encodeListingData(tokenAddress, tokenId);
         _syncData(encodedListingMessage);
 
-        emit Listing(chainIdThis, msg.sender, tokenAddress, tokenId, _price);
+        (string memory collectionName, string memory tokenURI) = _fetchNftDetails(tokenAddress, tokenId);
+
+        emit Listing(chainIdThis, msg.sender, tokenAddress, collectionName, tokenId, tokenURI, _price);
     }
             
     function cancelListing(address tokenAddress, uint256 tokenId) external {
@@ -125,11 +136,14 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         });
 
         // sync data listed
-        bytes memory delistNftData = _encodeListingData(tokenAddress, tokenId);
-        _syncData(delistNftData);
+        _syncData(_encodeListingData(tokenAddress, tokenId));
+
+        IERC20(tokenPayment).transferFrom(msg.sender, _listedBy, _listingPrice);
+
+        // fetch nft details
+        (string memory collectionName, string memory tokenURI) = _fetchNftDetails(tokenAddress, tokenId);
 
         if (saleType == SaleType.Native) {
-            IERC20(tokenPayment).transferFrom(msg.sender, _listedBy, _listingPrice);
             IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
 
             emit Sale(
@@ -139,7 +153,9 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
                 chainIdThis, 
                 msg.sender, 
                 _listedBy, 
+                collectionName,
                 tokenId, 
+                tokenURI,
                 _listingPrice
             );
 
@@ -147,9 +163,8 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             ListingDetails memory detail = _listingDetails[tokenAddress][tokenId];
           
             // Move nft & execute in multihop 
-            bytes memory encodedSaleMessage = _encodeSaleData(tokenAddress, tokenId, msg.sender);
             bytes[] memory _appMessage = new bytes[](1);
-            _appMessage[0] = encodedSaleMessage;
+            _appMessage[0] = _encodeSaleData(tokenAddress, tokenId, msg.sender);
             _executeAndForwardMessage(bestRoutes, _appMessage);
 
             if (chainIdThis == chainIdMaster) {
@@ -165,7 +180,9 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
                 _chainIdOrigin, 
                 msg.sender, 
                 detail.listedBy, 
+                collectionName,
                 tokenId, 
+                tokenURI,
                 detail.price
             );
         }
@@ -226,6 +243,19 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         (address tokenAddress, uint256 tokenId, ListingDetails memory detail) = _decodeListingData(data);
         _listingDetails[tokenAddress][tokenId] = detail;
 
-        emit Listing(detail.chainIdSelector, detail.listedBy, tokenAddress, tokenId, detail.price);
+        (string memory collectionName, string memory tokenURI) = _fetchNftDetails(tokenAddress, tokenId);
+
+        emit Listing(detail.chainIdSelector, detail.listedBy, tokenAddress, collectionName, tokenId, tokenURI, detail.price);
+    }
+
+    function _fetchNftDetails(address tokenAddress, uint256 tokenId) 
+        internal 
+        view
+        returns (
+            string memory collectionName,
+            string memory tokenURI
+    ) {
+        collectionName = INFT(tokenAddress).name();
+        tokenURI = INFT(tokenAddress).tokenURI(tokenId);
     }
 }
