@@ -14,7 +14,7 @@ contract DeployTokenProxySourceAsSourceInSepolia is Script, CCIPHelper {
         (address router, , ,) = getConfigFromNetwork(chain);
 
         uint64 chainIdSepolia = 16015286601757825753;
-        address tokenAddress = 0xe317A28EceC92f5FeF03d4F9Cd37f291AB5672D2;
+        address tokenAddress = 0xce30262B38873322765b50290c0c4267F321E3a0;
 
         TokenProxy_Source _tokenProxy_Source = new TokenProxy_Source(
            tokenAddress,
@@ -193,7 +193,7 @@ contract DeployBridgedCrosslinkAsDestinationInBSCTestnet is Script, CCIPHelper {
     }
 }
 
-contract UpdateCrossChainApp is Script, CCIPHelper {
+contract UpdateCrossChainAppTokenProxy is Script, CCIPHelper {
     function run(address payable marketplace, uint64[] memory chainSelector, address[] memory crossChainAppAddress) external {
 
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -202,8 +202,18 @@ contract UpdateCrossChainApp is Script, CCIPHelper {
         // Use this if its TokenProxy_Source
         TokenProxy_Source(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
 
-        // Use this if its Crosslink
-        // Crosslink(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
+        vm.stopBroadcast();
+    }
+}
+
+contract UpdateCrossChainAppBridgedCrosslink is Script, CCIPHelper {
+    function run(address payable marketplace, uint64[] memory chainSelector, address[] memory crossChainAppAddress) external {
+
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        // Use this if its TokenProxy_Source
+        BridgedCrosslink(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
 
         vm.stopBroadcast();
     }
@@ -222,16 +232,22 @@ contract DistributeLink is Script, CCIPHelper {
     }
 }
 
-contract SendTokenBridgeToAnotherChain is Script, CCIPHelper{
+contract SendTokenProxyBridgeToAnotherChain is Script, CCIPHelper{
     function run(address payable tokenProxy, uint64[] memory bestRoutes, address tokenReceiver, uint256 amount) external {
-
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        // Use this if its TokenProxy_Source
-        // TokenProxy_Source(tokenProxy).lockAndMint(bestRoutes, tokenReceiver, amount);
+        TokenProxy_Source(tokenProxy).lockAndMint(bestRoutes, tokenReceiver, amount);
 
-        // Use this if its BridgedCrosslink
+        vm.stopBroadcast();
+    }
+}
+
+contract SendBridgeCrosslinkToAnotherChain is Script, CCIPHelper{
+    function run(address payable tokenProxy, uint64[] memory bestRoutes, address tokenReceiver, uint256 amount) external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
         BridgedCrosslink(tokenProxy).burnAndMintOrUnlock(bestRoutes, tokenReceiver, amount);
 
         vm.stopBroadcast();
