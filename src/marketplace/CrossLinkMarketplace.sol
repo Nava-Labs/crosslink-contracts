@@ -63,7 +63,12 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         uint256 tokenId
     );
 
-    constructor(uint64 _chainIdThis, uint64 _chainIdMaster, address _router, address _tokenPayment) ChainlinkAppDataLayer(_chainIdThis, _chainIdMaster, _router) {
+    constructor(
+        uint64 _chainIdThis, 
+        uint64 _chainIdMaster, 
+        address _router, 
+        address _tokenPayment
+    ) ChainlinkAppDataLayer(_chainIdThis, _chainIdMaster, _router) {
         tokenPayment = _tokenPayment;
     }
 
@@ -96,7 +101,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             price: 0
         });
 
-        // IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
+        IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
 
         bytes memory data = _encodeListingData(tokenAddress, tokenId);
         _syncData(data);
@@ -126,7 +131,16 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             IERC20(tokenPayment).transferFrom(msg.sender, _listedBy, _listingPrice);
             IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
 
-            emit Sale(SaleType.Native, tokenAddress, chainIdThis, chainIdThis, msg.sender, _listedBy, tokenId, _listingPrice);
+            emit Sale(
+                SaleType.Native, 
+                tokenAddress, 
+                chainIdThis, 
+                chainIdThis, 
+                msg.sender, 
+                _listedBy, 
+                tokenId, 
+                _listingPrice
+            );
 
         } else {
             ListingDetails memory detail = _listingDetails[tokenAddress][tokenId];
@@ -143,7 +157,16 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
                 ITokenProxyDestination(tokenPayment).burnAndMintOrUnlock(bestRoutes, _listedBy,_listingPrice);
             }
 
-            emit Sale(SaleType.Native, tokenAddress, chainIdThis, detail.chainIdSelector, msg.sender, detail.listedBy, tokenId, detail.price);
+            emit Sale(
+                SaleType.Native, 
+                tokenAddress, 
+                chainIdThis, 
+                detail.chainIdSelector, 
+                msg.sender, 
+                detail.listedBy, 
+                tokenId, 
+                detail.price
+            );
         }
     }
 
@@ -171,7 +194,14 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         return abi.encode(tokenAddress, tokenId, _listingDetails[tokenAddress][tokenId], _crossChainSale);
     }
 
-    function _decodeSaleData(bytes memory data) internal pure returns (address tokenAddress, uint256 tokenId, CrossChainSale memory ccSale) {
+    function _decodeSaleData(bytes memory data) 
+        internal 
+        pure 
+        returns (
+            address tokenAddress, 
+            uint256 tokenId, 
+            CrossChainSale memory ccSale
+    ) {
         (tokenAddress, tokenId, , ccSale) = abi.decode(data, (address, uint256, ListingDetails, CrossChainSale));
     }
 
