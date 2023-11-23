@@ -9,8 +9,7 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
 
     uint256 public latestSyncTimestamp;
 
-    event SyncDataMessage(bytes32 messageId, bytes data);
-    event GraphSync(bytes data);
+    event SyncDataMessage(bytes data);
 
     constructor(uint64 _chainIdThis, uint64 _chainIdMaster, address _router) ChainlinkApp(_chainIdThis, _router) {
         chainIdMaster = _chainIdMaster;
@@ -35,7 +34,7 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
                 _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtensionIdWithMasterOrigin); 
             }
 
-            emit GraphSync(encodedMessage);
+            emit SyncDataMessage(encodedMessage);        
         } else if (chainIdOrigin == chainIdMaster) {
             _storeData(encodedMessage);
         }
@@ -78,8 +77,6 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
             toChain,
             message
         );
-
-        emit SyncDataMessage(messageId, data);        
     }
 
     function _syncData(bytes memory encodedMessage) internal {
@@ -91,7 +88,7 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
     function _storeData(bytes memory data) internal virtual;
 
     function _distributeSyncData(uint64 excludedChain, bytes memory data) private {
-        CrossChainMetadataAddress[5] memory _metadatas = getAllNetworks(); 
+        CrossChainMetadataAddress[6] memory _metadatas = getAllNetworks(); 
 
         // always exclude sepolia for duplication while storing data
         for(uint8 i = 1; i < _metadatas.length; i++) {
