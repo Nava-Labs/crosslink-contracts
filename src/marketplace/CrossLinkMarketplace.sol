@@ -24,6 +24,7 @@ error ExecutionFailed();
 
 contract CrossLinkMarketplace is ChainlinkAppDataLayer {
 
+    // Best practice if your app use more than one message to do
     bytes4 immutable public listingMessageId = 0x00000001;
     bytes4 immutable public saleMessageId = 0x00000002;
 
@@ -94,7 +95,13 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         });
 
         (string memory collectionName, string memory tokenURI) = _fetchNftDetails(tokenAddress, tokenId);
+
         bytes memory encodedListingMessage = _encodeListingData(tokenAddress, tokenId, collectionName, tokenURI);
+        /*
+         * Sync the listing data across chains.
+         * This is crucial for updating the contract's state across all connected chains.
+         * The actual data handling is dependent on the implementation of the {storeData} function.
+         */
         _syncData(encodedListingMessage);
 
         emit Listing(chainIdThis, msg.sender, tokenAddress, collectionName, tokenId, tokenURI, _price);
@@ -115,7 +122,11 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             price: 0
         });
 
-        // sync data sale
+        /*
+         * Sync the sale data across chains after updating the local contract state.
+         * This ensures that the sale information is consistent across all connected chains.
+         * The implementation of storeData function will define how this data is processed.
+         */
         _syncData(_encodeSaleData(tokenAddress, tokenId, _listedBy, msg.sender));
 
         IERC20(tokenPayment).transferFrom(msg.sender, address(this), _listingPrice);
@@ -138,6 +149,12 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             // Move nft & execute in multihop 
             bytes[] memory _appMessage = new bytes[](1);
             _appMessage[0] = _encodeSaleData(tokenAddress, tokenId, _listedBy, msg.sender);
+
+            /*
+             * Executes and forwards the message to enable multi-hop functionality and atomic executions.
+             * By using this function, messages can be sent across multiple chains.
+             * In this context, it's used to handle the cross-chain sale process.
+             */
             _executeAndForwardMessage(bestRoutes, _appMessage);
 
             if (chainIdThis == chainIdMaster) {
@@ -239,7 +256,15 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         ) = abi.decode(data, (address, uint256, ListingDetails, CrossChainSale));
     }
 
-    function _executeAppMessage(bytes[] memory encodedMessage) internal override {
+    /*
+     * Impelement the _executeAppMessage function from the ChainlinkApp library.
+     * Executes application-specific logic upon receiving a message via CCIP.
+     * In the context of the CrossLinkMarketplace, this function is tailored to handle post-buy operations.
+     * It iterates over each encoded message, decodes it to extract sale details,
+     * and then transfers the NFT to the new owner as per the cross-chain sale data.
+     * This is an essential part of ensuring that cross-chain transactions are completed successfully.
+     */
+     function _executeAppMessage(bytes[] memory encodedMessage) internal override {
         for (uint8 i = 0; i < encodedMessage.length; i++) {
             (, bytes memory encodedSaleMessage) = abi.decode(encodedMessage[i], (bytes4, bytes));
             (
@@ -261,6 +286,13 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }
 
+    /*
+     * Impelement the _storeData function from the DataLayer extension.
+     * This function is critical for updating the contract state in a cross-chain context.
+     * It decodes the incoming data based on its messageId and updates the contract's state
+     * with the new listing or sale details. Specifically, in this example, it handles the
+     * updates for new listings, reflecting changes in listing details across all connected chains.
+     */
     function _storeData(bytes memory data) internal override {
         (bytes4 _messageId, bytes memory encodedMessage) = abi.decode(data, (bytes4, bytes));
         

@@ -44,12 +44,21 @@ contract TokenProxy_Source is ChainlinkApp {
         bytes[] memory encodedMessage = new bytes[](1);
         encodedMessage[0] = abi.encode(tokenReceiver, amount);
 
-        // ccip send for triggering mint in dest chain
+        /*
+         * Executes and forwards the message across chains.
+         * It handles the routing and execution of encoded messages, in multi-hop scenarios.
+         * In this case, it's used for triggering the minting of tokens on the destination chain.
+         */        
         _executeAndForwardMessage(bestRoutes, encodedMessage);
-
         emit Lock(msg.sender, amount);
     }
 
+    /*
+     * Example implementation of the _executeAppMessage function from the Chainlink app library.
+     * This function demonstrates how you can override and implement custom logic for processing
+     * received encoded messages. In this example, it decodes each message to extract a receiver
+     * address and an amount, then unlocking the locked tokens to that address and emits an event.
+     */
     function _executeAppMessage(bytes[] memory encodedMessage) internal override {
         for(uint256 i = 0; i < encodedMessage.length; i++){
             (address tokenReceiver , uint256 amount) = abi.decode(encodedMessage[i],(address,uint256));

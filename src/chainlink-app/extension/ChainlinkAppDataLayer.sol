@@ -3,18 +3,26 @@ pragma solidity 0.8.19;
 
 import {Client, IRouterClient, ChainlinkApp} from "../ChainlinkApp.sol";
 
+/*
+ * Contract extension serving as a data layer for ChainlinkApp.
+ * This contract is responsible for managing cross-chain data synchronization.
+ */
 abstract contract ChainlinkAppDataLayer is ChainlinkApp {
-    uint64 immutable public chainIdMaster;
-    bytes4 constant syncMessageId = 0x53594e43; // SYNC
+    uint64 immutable public chainIdMaster; // Master chain ID for data synchronization
+    bytes4 constant syncMessageId = 0x53594e43; // SYNC - Identifier for sync messages
 
-    uint256 public latestSyncTimestamp;
+    uint256 public latestSyncTimestamp; // Timestamp of the latest data sync, used for data finality
 
-    event SyncDataMessage(bytes data);
+    event SyncDataMessage(bytes data); // Event emitted when sync data is synced
 
     constructor(uint64 _chainIdThis, uint64 _chainIdMaster, address _router) ChainlinkApp(_chainIdThis, _router) {
         chainIdMaster = _chainIdMaster;
     }
 
+    /*
+     * Decides whether to send the message to the master chain or update the current state for data synchronization.
+     * Checks the origin of the message.
+     */
     function _sendToMasterOrUpdate(
         bytes memory encodedMessageWithExtensionId
     ) internal {
@@ -42,20 +50,63 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
         latestSyncTimestamp = latestSyncTime;
     }
 
+    /*
+     * Encodes the message for syncing data with an extension ID.
+     * This is used to standardize the format of messages being sent for synchronization.
+     */
     function _encodeSyncMessageWithExtensionId(bytes memory encodedMessageWithMasterOrigin) internal pure returns (bytes memory encodedMessageWithExtensionId) {
         bytes memory encodedMessageWithWithExtensionIdAndMasterOrigin = abi.encode(syncMessageId, encodedMessageWithMasterOrigin);
         return encodedMessageWithWithExtensionIdAndMasterOrigin;
     }
 
+    /*
+     * Decodes the message for syncing data, extracting the origin chain ID, message content, and sync time.
+     * This function is crucial for understanding the context and content of incoming sync messages.
+     */
     function _decodeSyncMessageWithExtensionId(bytes memory encodedMessageWithExtensionId) internal pure returns (uint64 chainIdOrigin, bytes memory encodedMessage, uint256 latestSyncTime) {
         (, bytes memory syncMessage) = abi.decode(encodedMessageWithExtensionId, (bytes4, bytes));
         (chainIdOrigin, encodedMessage, latestSyncTime) = abi.decode(syncMessage, (uint64, bytes, uint256));
     }
 
+    /*
+     * Forwards the message directly to the master chain for processing.
+     * This is a key function in ensuring that the master chain receives all relevant data for synchronization.
+     */
     function _sendToMaster(bytes memory data) private returns (bytes32 messageId) {        
         CrossChainMetadataAddress memory _metadataChainMaster = getConfigFromNetwork(chainIdMaster);
         messageId = _sendMessage(chainIdMaster, _metadataChainMaster.crossChainApp, data);
    }
+
+    /*
+     * Internal function for applications using this abstract contract to sync data across all contracts in all chains.
+     * It packages the data and initiates the synchronization process.
+     */
+    function _syncData(bytes memory encodedMessage) internal {
+        bytes memory syncMessage = abi.encode(chainIdThis, encodedMessage, block.timestamp);
+        bytes memory encodedMessageWithExtensionId = abi.encode(syncMessageId, syncMessage);
+        _sendToMasterOrUpdate(encodedMessageWithExtensionId);
+    }
+
+    /*
+     * Called when the contract receives a message for data storage.
+     * This is where the implementation for data storage should be defined.
+     */
+    function _storeData(bytes memory data) internal virtual;
+
+    /*
+     * Properly distributes data to all chains, excluding the origin chain.
+     * This function ensures data consistency and availability across the network.
+     */
+    function _distributeSyncData(uint64 excludedChain, bytes memory data) private {
+        CrossChainMetadataAddress[6] memory _metadatas = getAllNetworks(); 
+
+        // always exclude sepolia for duplication while storing data
+        for(uint8 i = 1; i < _metadatas.length; i++) {
+            if (_metadatas[i].chainIdSelector != excludedChain) {
+                _sendMessage(_metadatas[i].chainIdSelector, _metadatas[i].crossChainApp, data);    
+            }
+        }
+    }
 
     function _sendMessage(uint64 toChain, address receiver, bytes memory data) internal override returns (bytes32 messageId) {
         CrossChainMetadataAddress memory _metadataChainThis = getConfigFromNetwork(chainIdThis);
@@ -79,25 +130,9 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
         );
     }
 
-    function _syncData(bytes memory encodedMessage) internal {
-        bytes memory syncMessage = abi.encode(chainIdThis, encodedMessage, block.timestamp);
-        bytes memory encodedMessageWithExtensionId = abi.encode(syncMessageId, syncMessage);
-        _sendToMasterOrUpdate(encodedMessageWithExtensionId);
-    }
-
-    function _storeData(bytes memory data) internal virtual;
-
-    function _distributeSyncData(uint64 excludedChain, bytes memory data) private {
-        CrossChainMetadataAddress[6] memory _metadatas = getAllNetworks(); 
-
-        // always exclude sepolia for duplication while storing data
-        for(uint8 i = 1; i < _metadatas.length; i++) {
-            if (_metadatas[i].chainIdSelector != excludedChain) {
-                _sendMessage(_metadatas[i].chainIdSelector, _metadatas[i].crossChainApp, data);    
-            }
-        }
-    }
-
+    /*
+     * Handles CCIP receive logic, managing cross-chain message passing and execution.
+     */
     function _ccipReceive(
         Client.Any2EVMMessage memory message
     ) internal override {

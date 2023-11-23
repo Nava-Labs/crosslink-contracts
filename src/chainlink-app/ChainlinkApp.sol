@@ -8,12 +8,16 @@ import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
 import {TrustedSender} from "./TrustedSender.sol";
 
+/*
+ * Abstract contract for creating cross-chain applications using CCIP.
+ * This contract sets up the basic framework for sending, receiving, and processing cross-chain messages.
+ */
 abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
     error UnauthorizedChainSelector();
     error FailedToWithdrawEth(address owner, address target, uint256 value);
 
     uint64 immutable public chainIdThis;
-    bytes4 constant rootMessageId = 0x524f4f54; // ROOT
+    bytes4 constant rootMessageId = 0x524f4f54; // ROOT - Identifier for root messages
 
     event MessageSent(bytes32 messageId, bytes data);
 
@@ -31,23 +35,39 @@ abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
     /********************** Encode & Decode *************************/
     /****************************************************************/
 
+    /*
+     * Encodes application messages, preparing them for cross-chain transmission.
+     * This function is essential for handling multihoping between chains and bundling many messages into one execution.
+     */
     function _encodeAppMessage(uint64[] memory bestRoutes, bytes[] memory encodedMessage) internal pure returns (bytes memory) {
         bytes memory appMessage = abi.encode(bestRoutes, encodedMessage);
         bytes memory encodedAppMessageWithRootId = abi.encode(rootMessageId, appMessage);
         return encodedAppMessageWithRootId;
     }
 
+    /*
+     * Decodes the received standarized Chainlink application message.
+     * This is crucial for properly interpreting the content and route of the incoming messages.
+     */
     function _decodeAppMessage(bytes memory encodedAppMessage) internal pure returns (uint64[] memory bestRoutes, bytes[] memory encodedMessage) {
         (, bytes memory appMessage) = abi.decode(encodedAppMessage, (bytes4, bytes));
         (bestRoutes, encodedMessage) = abi.decode(appMessage, (uint64[], bytes[]));
     }
 
+    /*
+     * Abstract function to be overridden for applying logic whenever your application receives a message from CCIP.
+     * This is where the specific logic of your cross-chain application will be implemented.
+     */
     function _executeAppMessage(bytes[] memory data) internal virtual;
 
     /****************************************************************/
     /********************** Execute or Forward **********************/
     /****************************************************************/
 
+    /*
+     * Determines where in the chain the logic should be executed for multi-hop scenarios.
+     * This function plays a crucial role in routing and processing the messages across different chains.
+     */
     function _executeAndForwardMessage(uint64[] memory bestRoutes, bytes[] memory encodedMessage) internal {
         // remove first array bestRoutes to determine the destination
         uint64[] memory newBestRoutes = new uint64[](bestRoutes.length - 1);
@@ -107,6 +127,10 @@ abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
         emit MessageReceived(message.messageId, message.data);
     }
 
+    /*
+     * Allows the withdrawal of tokens from the contract.
+     * This function provides a mechanism for retrieving tokens that are held by the contract.
+     */
     function withdrawToken(
         address beneficiary,
         address token
