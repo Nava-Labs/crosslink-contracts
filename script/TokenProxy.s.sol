@@ -253,3 +253,14 @@ contract SendBridgeCrosslinkToAnotherChain is Script, CCIPHelper{
         vm.stopBroadcast();
     }
 }
+
+contract SendCrosslinkTokenToTesterAddress is Script, CCIPHelper{
+    function run(address token,address to,uint256 amount) external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        SimpleERC20(token).transfer(to, amount);
+
+        vm.stopBroadcast();
+    }
+}
