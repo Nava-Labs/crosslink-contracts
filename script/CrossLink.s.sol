@@ -256,5 +256,14 @@ contract Marketplace is Script, CCIPHelper {
         vm.stopBroadcast();
     }
 
+    function updateTokenPayment(address payable to, address token) external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        CrossLinkMarketplace(to).setTokenPayment(token);
+
+        vm.stopBroadcast();
+    }
+
 }
 
