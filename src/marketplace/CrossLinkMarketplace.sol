@@ -24,13 +24,19 @@ error ExecutionFailed();
 
 contract CrossLinkMarketplace is ChainlinkAppDataLayer {
 
-    address immutable public tokenPayment;
     bytes4 immutable public listingMessageId = 0x00000001;
     bytes4 immutable public saleMessageId = 0x00000002;
+
+    address public tokenPayment;
 
     enum SaleType {
         Native,
         CrossChain
+    }
+
+    struct NFTDetails {
+        string collectionName;
+        string tokenURI;
     }
 
     struct ListingDetails {
@@ -50,7 +56,9 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         uint64 indexed chainIdSelector,
         address indexed ownerAddress, 
         address indexed tokenAddress,
+        string collectionName,
         uint256 tokenId,
+        string tokenURI,
         uint256 price
     );
 
@@ -85,10 +93,11 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             price: _price
         });
 
-        bytes memory encodedListingMessage = _encodeListingData(tokenAddress, tokenId);
+        (string memory collectionName, string memory tokenURI) = _fetchNftDetails(tokenAddress, tokenId);
+        bytes memory encodedListingMessage = _encodeListingData(tokenAddress, tokenId, collectionName, tokenURI);
         _syncData(encodedListingMessage);
 
-        emit Listing(chainIdThis, msg.sender, tokenAddress, tokenId, _price);
+        emit Listing(chainIdThis, msg.sender, tokenAddress, collectionName, tokenId, tokenURI, _price);
     }
 
     function buy(SaleType saleType, uint64[] memory bestRoutes, address tokenAddress, uint256 tokenId) external {    
@@ -109,7 +118,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         // sync data sale
         _syncData(_encodeSaleData(tokenAddress, tokenId, _listedBy, msg.sender));
 
-        IERC20(tokenPayment).transferFrom(msg.sender, _listedBy, _listingPrice);
+        IERC20(tokenPayment).transferFrom(msg.sender, address(this), _listingPrice);
 
         if (saleType == SaleType.Native) {
             IERC721(tokenAddress).safeTransferFrom(address(this), msg.sender, tokenId);
@@ -125,9 +134,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
                 _listingPrice
             );
 
-        } else {
-            ListingDetails memory detail = _listingDetails[tokenAddress][tokenId];
-          
+        } else {          
             // Move nft & execute in multihop 
             bytes[] memory _appMessage = new bytes[](1);
             _appMessage[0] = _encodeSaleData(tokenAddress, tokenId, _listedBy, msg.sender);
@@ -145,22 +152,37 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
                 chainIdThis, 
                 _chainIdOrigin, 
                 msg.sender, 
-                detail.listedBy, 
+                _listedBy, 
                 tokenId, 
-                detail.price
+                _listingPrice
             );
         }
+    }
+
+    function setTokenPayment(address _tokenPayment) external onlyOwner {
+        tokenPayment = _tokenPayment;
     }
 
     function checkListedNftDetails(address tokenAddress, uint256 tokenId) external view returns (ListingDetails memory) {
         return _listingDetails[tokenAddress][tokenId];
     }
 
-    function _encodeListingData(address tokenAddress, uint256 tokenId) internal view returns (bytes memory) {
+    function _encodeListingData(
+        address tokenAddress, 
+        uint256 tokenId, 
+        string memory collectionName, 
+        string memory tokenURI
+    ) internal view returns (bytes memory) {
+        NFTDetails memory nftDetails = NFTDetails ({
+            collectionName: collectionName,
+            tokenURI: tokenURI
+        });
+
         bytes memory encodedListingData = abi.encode(
             tokenAddress, 
             tokenId, 
-            _listingDetails[tokenAddress][tokenId]
+            _listingDetails[tokenAddress][tokenId],
+            nftDetails
         );
         return abi.encode(listingMessageId, encodedListingData);
     }
@@ -168,9 +190,15 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
     function _decodeListingData(bytes memory data) internal pure returns (
         address tokenAddress, 
         uint256 tokenId,
-        ListingDetails memory listingDetail
+        ListingDetails memory listingDetail,
+        NFTDetails memory nftDetails
     ) {
-        (tokenAddress, tokenId, listingDetail) = abi.decode(data, (address, uint256, ListingDetails));
+        (
+            tokenAddress, 
+            tokenId, 
+            listingDetail, 
+            nftDetails
+        ) = abi.decode(data, (address, uint256, ListingDetails, NFTDetails));
     }
 
     function _encodeSaleData(
@@ -203,7 +231,12 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             ListingDetails memory listingDetail,
             CrossChainSale memory crossChainSale
     ) {
-        (tokenAddress, tokenId, listingDetail, crossChainSale) = abi.decode(data, (address, uint256, ListingDetails, CrossChainSale));
+        (
+            tokenAddress, 
+            tokenId, 
+            listingDetail, 
+            crossChainSale
+        ) = abi.decode(data, (address, uint256, ListingDetails, CrossChainSale));
     }
 
     function _executeAppMessage(bytes[] memory encodedMessage) internal override {
@@ -235,18 +268,52 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             (
                 address tokenAddress, 
                 uint256 tokenId, 
-                ListingDetails memory listingDetail
+                ListingDetails memory listingDetail,
+                NFTDetails memory nftDetails
             ) = _decodeListingData(encodedMessage);
 
             _listingDetails[tokenAddress][tokenId] = listingDetail;
+            emit Listing(
+                listingDetail.chainIdSelector, 
+                listingDetail.listedBy, 
+                tokenAddress, 
+                nftDetails.collectionName,
+                tokenId, 
+                nftDetails.tokenURI,
+                listingDetail.price
+            );
+
         } else if (_messageId == saleMessageId) {
             (
                 address tokenAddress, 
                 uint256 tokenId, 
                 ListingDetails memory listingDetail,
+                CrossChainSale memory crossChainSale            
             ) = _decodeSaleData(encodedMessage);
 
             _listingDetails[tokenAddress][tokenId] = listingDetail;
+
+            emit Sale(
+                SaleType.CrossChain, 
+                tokenAddress, 
+                crossChainSale.saleChainIdSelector, 
+                listingDetail.chainIdSelector, 
+                crossChainSale.newOwner,
+                crossChainSale.prevOwner,
+                tokenId, 
+                listingDetail.price
+            );
         }
+    }
+
+    function _fetchNftDetails(address tokenAddress, uint256 tokenId) 
+        internal 
+        view
+        returns (
+            string memory collectionName,
+            string memory tokenURI
+    ) {
+        collectionName = INFT(tokenAddress).name();
+        tokenURI = INFT(tokenAddress).tokenURI(tokenId);
     }
 }
