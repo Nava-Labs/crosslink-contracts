@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import {Client, IRouterClient, ChainlinkApp} from "../ChainlinkApp.sol";
+import {Client, IRouterClient, CRC1} from "../CRC1.sol";
 
 /*
  * Contract extension serving as a data layer for ChainlinkApp.
  * This contract is responsible for managing cross-chain data synchronization.
  */
-abstract contract ChainlinkAppDataLayer is ChainlinkApp {
+abstract contract CRC1Syncable is CRC1 {
     uint64 immutable public chainIdMaster; // Master chain ID for data synchronization
     bytes4 constant syncMessageId = 0x53594e43; // SYNC - Identifier for sync messages
 
@@ -15,7 +15,7 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
 
     event SyncDataMessage(bytes data); // Event emitted when sync data is synced
 
-    constructor(uint64 _chainIdThis, uint64 _chainIdMaster, address _router) ChainlinkApp(_chainIdThis, _router) {
+    constructor(uint64 _chainIdThis, uint64 _chainIdMaster, address _router) CRC1(_chainIdThis, _router) {
         chainIdMaster = _chainIdMaster;
     }
 
@@ -154,5 +154,12 @@ abstract contract ChainlinkAppDataLayer is ChainlinkApp {
         }
 
         emit MessageReceived(message.messageId, message.data);
+    }
+
+    /**
+     * @dev Checks whether is Data Extension
+     */
+    function supportsExtInterface(bytes4 interfaceId) public pure returns (bool) {
+        return interfaceId == 0x44617461;
     }
 }

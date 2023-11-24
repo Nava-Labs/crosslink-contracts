@@ -1,17 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import {ChainlinkAppDataLayer} from "../chainlink-app/extension/ChainlinkAppDataLayer.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-interface ITokenProxySource {
-    function lockAndMint(uint64[] memory bestRoutes ,address tokenReceiver, uint256 amount) external;
-}
-
-interface ITokenProxyDestination {
-    function burnAndMintOrUnlock(uint64[] memory bestRoutes ,address tokenReceiver, uint256 amount) external;
-}
+import {CRC1Syncable} from "ccip/CRC1/extension/CRC1Syncable.sol";
+import {ICRC20Source} from "ccip/CRC20/interfaces/ICRC20Source.sol";
+import {ICRC20Destination} from "ccip/CRC20/interfaces/ICRC20Destination.sol";
 
 interface INFT {
     function name() external view returns (string memory);
@@ -22,7 +16,7 @@ error Unauthorized();
 error NotForSale();
 error ExecutionFailed();
 
-contract CrossLinkMarketplace is ChainlinkAppDataLayer {
+contract NFTMarketplace is CRC1Syncable {
 
     // Best practice if your app use more than one message to do
     bytes4 immutable public listingMessageId = 0x00000001;
@@ -79,7 +73,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         uint64 _chainIdMaster, 
         address _router, 
         address _tokenPayment
-    ) ChainlinkAppDataLayer(_chainIdThis, _chainIdMaster, _router) {
+    ) CRC1Syncable(_chainIdThis, _chainIdMaster, _router) {
         tokenPayment = _tokenPayment;
     }
 
@@ -107,7 +101,7 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
         emit Listing(chainIdThis, msg.sender, tokenAddress, collectionName, tokenId, tokenURI, _price);
     }
 
-    function buy(SaleType saleType, uint64[] memory bestRoutes, address tokenAddress, uint256 tokenId) external {    
+    function buy(uint64[] memory bestRoutes, SaleType saleType, address tokenAddress, uint256 tokenId) external {    
         uint64 _chainIdOrigin = _listingDetails[tokenAddress][tokenId].chainIdSelector;
         address _listedBy = _listingDetails[tokenAddress][tokenId].listedBy;
         uint256 _listingPrice = _listingDetails[tokenAddress][tokenId].price;
@@ -158,9 +152,9 @@ contract CrossLinkMarketplace is ChainlinkAppDataLayer {
             _executeAndForwardMessage(bestRoutes, _appMessage);
 
             if (chainIdThis == chainIdMaster) {
-                ITokenProxySource(tokenPayment).lockAndMint(bestRoutes, _listedBy,_listingPrice);
+                ICRC20Source(tokenPayment).lockAndMint(bestRoutes, _listedBy,_listingPrice);
             } else {
-                ITokenProxyDestination(tokenPayment).burnAndMintOrUnlock(bestRoutes, _listedBy,_listingPrice);
+                ICRC20Destination(tokenPayment).burnAndMintOrUnlock(bestRoutes, _listedBy,_listingPrice);
             }
 
             emit Sale(

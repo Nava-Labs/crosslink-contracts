@@ -2,8 +2,9 @@
 
 pragma solidity ^0.8.19;
 
-import {IERC20 , ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {ChainlinkApp} from "../chainlink-app/ChainlinkApp.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {CRC1} from "ccip/CRC1/CRC1.sol";
+import {ICRC20Source} from "./interfaces/ICRC20Source.sol";
 
 error UnauthorizedChainSelector();
 
@@ -12,7 +13,7 @@ error UnauthorizedChainSelector();
  * via Chainlink CCIP.
  * recognized off-chain (via event analysis).
  */
-contract TokenProxy_Source is ChainlinkApp {    
+contract CRC20Source is CRC1, ICRC20Source {    
 
     address immutable public tokenAddress; 
 
@@ -30,7 +31,7 @@ contract TokenProxy_Source is ChainlinkApp {
     //                            CCIP
     // =============================================================
 
-    constructor(address _tokenAddress, address _router, uint64 _chainIdThis) ChainlinkApp(_chainIdThis, _router){
+    constructor(address _tokenAddress, address _router, uint64 _chainIdThis) CRC1(_chainIdThis, _router){
         tokenAddress = _tokenAddress;
     }
 

@@ -5,7 +5,7 @@ import { Ownable } from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import { Strings } from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import { ERC721A } from "erc721a/ERC721A.sol";
 
-contract MockERC721 is Ownable, ERC721A {
+contract SimpleERC721 is Ownable, ERC721A {
     using Strings for uint256;
 
     string public baseURI;
@@ -34,7 +34,7 @@ contract MockERC721 is Ownable, ERC721A {
     {
         if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
-        return bytes(_baseURI()).length != 0 ? string(abi.encodePacked(baseURI, _toString(tokenId), ".json")) : '';
+        return bytes(_baseURI()).length != 0 ? string(abi.encodePacked(baseURI, _toString(tokenId), "")) : '';
     }
 
     function mint(uint256 _quantity) external payable {

@@ -6,13 +6,13 @@ import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkT
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
-import {TrustedSender} from "./TrustedSender.sol";
+import {Trustable} from "./Trustable.sol";
 
 /*
  * Abstract contract for creating cross-chain applications using CCIP.
  * This contract sets up the basic framework for sending, receiving, and processing cross-chain messages.
  */
-abstract contract ChainlinkApp is CCIPReceiver, TrustedSender {
+abstract contract CRC1 is CCIPReceiver, Trustable {
     error UnauthorizedChainSelector();
     error FailedToWithdrawEth(address owner, address target, uint256 value);
 

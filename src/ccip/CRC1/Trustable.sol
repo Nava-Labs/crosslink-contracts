@@ -11,7 +11,7 @@ import {CCIPDirectory} from "./CCIPDirectory.sol";
  * Security layer contract.
  * Purpose for secure the interaction between app across chains.
  */
-contract TrustedSender is OwnerIsCreator, CCIPDirectory {
+contract Trustable is OwnerIsCreator, CCIPDirectory {
 
     /**
      * @dev Emitted when Trusted Sender is set
