@@ -2,17 +2,17 @@
 pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
-import {MockERC721} from "../src/token/MockERC721.sol";
+import {SimpleERC721} from "../src/mocks/SimpleERC721.sol";
 
 contract DeployMockERC721 is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        MockERC721 erc721 = new MockERC721(
-            "Skyweaver",
-            "SWR",
-            "https://assets.skyweaver.net/latest/metadata/"
+        SimpleERC721 erc721 = new SimpleERC721(
+            "PudgyPenguins",
+            "PPG",
+            "https://ipfs.io/ipfs/bafybeibc5sgo2plmjkq2tzmhrn54bk3crhnc23zd2msg4ea7a4pxrkgfna/"
         );
 
         console.log(
@@ -33,7 +33,7 @@ contract MockERC721Interaction is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        MockERC721(token).approve(spender, tokenId);
+        SimpleERC721(token).approve(spender, tokenId);
 
         vm.stopBroadcast();
     }
@@ -47,7 +47,7 @@ contract MockERC721Interaction is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        MockERC721(token).transferFrom(from, to, tokenId);
+        SimpleERC721(token).transferFrom(from, to, tokenId);
 
         vm.stopBroadcast();
     }
@@ -59,7 +59,7 @@ contract MockERC721Interaction is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        MockERC721(token).mint(_qty);
+        SimpleERC721(token).mint(_qty);
 
         vm.stopBroadcast();
     }

@@ -2,11 +2,11 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "./CCIPHelper.sol";
-import {BridgedCrosslink} from "../src/token/BridgedCrosslink.sol";
-import {TokenProxy_Source} from "../src/proxy/TokenProxy_Source.sol";
-import {SimpleERC20} from "../src/token/SimpleERC20.sol";
+import {CRC20Example} from "../src/examples/token/CRC20Example.sol";
+import {CRC20Source} from "../src/ccip/CRC20/CRC20Source.sol";
+import {SimpleERC20} from "../src/mocks/SimpleERC20.sol";
 
-contract DeployTokenProxySourceAsSourceInSepolia is Script, CCIPHelper {
+contract DeployCRC20SourceInSepolia is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -16,22 +16,22 @@ contract DeployTokenProxySourceAsSourceInSepolia is Script, CCIPHelper {
         uint64 chainIdSepolia = 16015286601757825753;
         address tokenAddress = 0xce30262B38873322765b50290c0c4267F321E3a0;
 
-        TokenProxy_Source _tokenProxy_Source = new TokenProxy_Source(
+        CRC20Source crcSource = new CRC20Source(
            tokenAddress,
            router,
            chainIdSepolia
         );
 
         console.log(
-            "TokenProxy Source in sepolia deployed with address: ",
-            address(_tokenProxy_Source)
+            "CRC20Source Source in sepolia deployed with address: ",
+            address(crcSource)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract DeployBridgedCrosslinkAsDestinationInOPGoerli is Script, CCIPHelper {
+contract DeployCRC20TokenExampleInOPGoerli is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -42,7 +42,7 @@ contract DeployBridgedCrosslinkAsDestinationInOPGoerli is Script, CCIPHelper {
         string memory symbol = "BCL";
         uint64 chainIdOPGoerli = 2664363617261496610;
 
-       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
+       CRC20Example _CRC20Example = new CRC20Example(
             name,
             symbol,
             router,
@@ -51,14 +51,14 @@ contract DeployBridgedCrosslinkAsDestinationInOPGoerli is Script, CCIPHelper {
 
         console.log(
             "Bridged Crosslink in OP Goerli deployed with address: ",
-            address(_bridgedCrosslink)
+            address(_CRC20Example)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract DeployBridgedCrosslinkAsDestinationInFuji is Script, CCIPHelper {
+contract DeployCRC20TokenExampleInFuji is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -69,7 +69,7 @@ contract DeployBridgedCrosslinkAsDestinationInFuji is Script, CCIPHelper {
         string memory symbol = "BCL";
         uint64 chainIdFuji = 14767482510784806043;
 
-       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
+       CRC20Example _CRC20Example = new CRC20Example(
             name,
             symbol,
             router,
@@ -78,14 +78,14 @@ contract DeployBridgedCrosslinkAsDestinationInFuji is Script, CCIPHelper {
 
         console.log(
             "Bridged Crosslink in AV Fuji deployed with address: ",
-            address(_bridgedCrosslink)
+            address(_CRC20Example)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract DeployBridgedCrosslinkAsDestinationInArbitrumGoerli is Script, CCIPHelper {
+contract DeployCRC20TokenExampleInArbitrumGoerli is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -96,7 +96,7 @@ contract DeployBridgedCrosslinkAsDestinationInArbitrumGoerli is Script, CCIPHelp
         string memory symbol = "BCL";
         uint64 chainIdArbitrumGoerli = 6101244977088475029;
 
-       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
+       CRC20Example _CRC20Example = new CRC20Example(
             name,
             symbol,
             router,
@@ -105,14 +105,14 @@ contract DeployBridgedCrosslinkAsDestinationInArbitrumGoerli is Script, CCIPHelp
 
         console.log(
             "Bridged Crosslink in Arbitrum Goerli deployed with address: ",
-            address(_bridgedCrosslink)
+            address(_CRC20Example)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract DeployBridgedCrosslinkAsDestinationInPolygonMumbai is Script, CCIPHelper {
+contract DeployCRC20TokenExampleInPolygonMumbai is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -123,7 +123,7 @@ contract DeployBridgedCrosslinkAsDestinationInPolygonMumbai is Script, CCIPHelpe
         string memory symbol = "BCL";
         uint64 chainIdPolygonMumbai = 12532609583862916517;
 
-       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
+       CRC20Example _CRC20Example = new CRC20Example(
             name,
             symbol,
             router,
@@ -132,14 +132,14 @@ contract DeployBridgedCrosslinkAsDestinationInPolygonMumbai is Script, CCIPHelpe
 
         console.log(
             "Bridged Crosslink in Polygon Mumbai deployed with address: ",
-            address(_bridgedCrosslink)
+            address(_CRC20Example)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract DeployBridgedCrosslinkAsDestinationInBaseGoerli is Script, CCIPHelper {
+contract DeployCRC20TokenExampleInBaseGoerli is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -150,7 +150,7 @@ contract DeployBridgedCrosslinkAsDestinationInBaseGoerli is Script, CCIPHelper {
         string memory symbol = "BCL";
         uint64 chainIdBaseGoerli = 5790810961207155433;
 
-       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
+       CRC20Example _CRC20Example = new CRC20Example(
             name,
             symbol,
             router,
@@ -159,14 +159,14 @@ contract DeployBridgedCrosslinkAsDestinationInBaseGoerli is Script, CCIPHelper {
 
         console.log(
             "Bridged Crosslink in Base Goerli deployed with address: ",
-            address(_bridgedCrosslink)
+            address(_CRC20Example)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract DeployBridgedCrosslinkAsDestinationInBSCTestnet is Script, CCIPHelper {
+contract DeployCRC20TokenExampleInBSCTestnet is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -177,7 +177,7 @@ contract DeployBridgedCrosslinkAsDestinationInBSCTestnet is Script, CCIPHelper {
         string memory symbol = "BCL";
         uint64 chainIdBaseGoerli = 13264668187771770619;
 
-       BridgedCrosslink _bridgedCrosslink = new BridgedCrosslink(
+       CRC20Example _CRC20Example = new CRC20Example(
             name,
             symbol,
             router,
@@ -186,34 +186,34 @@ contract DeployBridgedCrosslinkAsDestinationInBSCTestnet is Script, CCIPHelper {
 
         console.log(
             "Bridged Crosslink in Base Goerli deployed with address: ",
-            address(_bridgedCrosslink)
+            address(_CRC20Example)
         );
 
         vm.stopBroadcast();
     }
 }
 
-contract UpdateCrossChainAppTokenProxy is Script, CCIPHelper {
+contract UpdateCrossChainAppCRC20Source is Script, CCIPHelper {
     function run(address payable marketplace, uint64[] memory chainSelector, address[] memory crossChainAppAddress) external {
 
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        // Use this if its TokenProxy_Source
-        TokenProxy_Source(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
+        // Use this if its CRC20Source
+        CRC20Source(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
 
         vm.stopBroadcast();
     }
 }
 
-contract UpdateCrossChainAppBridgedCrosslink is Script, CCIPHelper {
+contract UpdateCrossChainAppCRC20TokenExample is Script, CCIPHelper {
     function run(address payable marketplace, uint64[] memory chainSelector, address[] memory crossChainAppAddress) external {
 
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        // Use this if its TokenProxy_Source
-        BridgedCrosslink(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
+        // Use this if its CRC20Source
+        CRC20Example(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
 
         vm.stopBroadcast();
     }
@@ -232,29 +232,29 @@ contract DistributeLink is Script, CCIPHelper {
     }
 }
 
-contract SendTokenProxyBridgeToAnotherChain is Script, CCIPHelper{
-    function run(address payable tokenProxy, uint64[] memory bestRoutes, address tokenReceiver, uint256 amount) external {
+contract SendCRC20SourceToAnotherChain is Script, CCIPHelper{
+    function run(address payable crc20Source, uint64[] memory bestRoutes, address tokenReceiver, uint256 amount) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        TokenProxy_Source(tokenProxy).lockAndMint(bestRoutes, tokenReceiver, amount);
+        CRC20Source(crc20Source).lockAndMint(bestRoutes, tokenReceiver, amount);
 
         vm.stopBroadcast();
     }
 }
 
-contract SendBridgeCrosslinkToAnotherChain is Script, CCIPHelper{
-    function run(address payable tokenProxy, uint64[] memory bestRoutes, address tokenReceiver, uint256 amount) external {
+contract SendCRC20TokenToAnotherChain is Script, CCIPHelper{
+    function run(address payable crc20Token, uint64[] memory bestRoutes, address tokenReceiver, uint256 amount) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        BridgedCrosslink(tokenProxy).burnAndMintOrUnlock(bestRoutes, tokenReceiver, amount);
+        CRC20Example(crc20Token).burnAndMintOrUnlock(bestRoutes, tokenReceiver, amount);
 
         vm.stopBroadcast();
     }
 }
 
-contract SendCrosslinkTokenToTesterAddress is Script, CCIPHelper{
+contract SendCRC20TokenToTesterAddress is Script, CCIPHelper{
     function run(address token,address to,uint256 amount) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);

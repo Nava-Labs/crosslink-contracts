@@ -3,11 +3,11 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "./CCIPHelper.sol";
-import {CrossLinkMarketplace} from "../src/marketplace/CrossLinkMarketplace.sol";
-import {SimpleERC20} from "../src/token/SimpleERC20.sol";
+import {NFTMarketplace} from "../src/examples/app/NFTMarketplace.sol";
+import {SimpleERC20} from "../src/mocks/SimpleERC20.sol";
 import {console2} from "forge-std/Test.sol";
 
-contract DeployCrossLinkSepolia is Script, CCIPHelper {
+contract DeployMarketplaceSepolia is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -18,7 +18,7 @@ contract DeployCrossLinkSepolia is Script, CCIPHelper {
         uint64 chainIdThis = 16015286601757825753;
         uint64 chainIdMaster = 16015286601757825753;
 
-        CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
+        NFTMarketplace _marketplace = new NFTMarketplace (
             chainIdThis,
             chainIdMaster,
             router,
@@ -26,7 +26,7 @@ contract DeployCrossLinkSepolia is Script, CCIPHelper {
         );
 
         console.log(
-            "CrossLink contract deployed on with address: ",
+            "Marketplace contract deployed on with address: ",
             address(_marketplace)
         );
 
@@ -34,7 +34,7 @@ contract DeployCrossLinkSepolia is Script, CCIPHelper {
     }
 }
 
-contract DeployCrossLinkOpGoerli is Script, CCIPHelper {
+contract DeployMarketplaceOpGoerli is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -45,7 +45,7 @@ contract DeployCrossLinkOpGoerli is Script, CCIPHelper {
         uint64 chainIdThis = 2664363617261496610;
         uint64 chainIdMaster = 16015286601757825753;
 
-        CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
+        NFTMarketplace _marketplace = new NFTMarketplace (
             chainIdThis,
             chainIdMaster,
             router,
@@ -53,7 +53,7 @@ contract DeployCrossLinkOpGoerli is Script, CCIPHelper {
         );
 
         console.log(
-            "CrossLink contract deployed on with address: ",
+            "Marketplace contract deployed on with address: ",
             address(_marketplace)
         );
 
@@ -61,7 +61,7 @@ contract DeployCrossLinkOpGoerli is Script, CCIPHelper {
     }
 }
 
-contract DeployCrossLinkFuji is Script, CCIPHelper {
+contract DeployMarketplaceFuji is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -72,7 +72,7 @@ contract DeployCrossLinkFuji is Script, CCIPHelper {
         uint64 chainIdThis = 14767482510784806043;
         uint64 chainIdMaster = 16015286601757825753;
 
-        CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
+        NFTMarketplace _marketplace = new NFTMarketplace (
             chainIdThis,
             chainIdMaster,
             router,
@@ -80,7 +80,7 @@ contract DeployCrossLinkFuji is Script, CCIPHelper {
         );
 
         console.log(
-            "CrossLink contract deployed on with address: ",
+            "Marketplace contract deployed on with address: ",
             address(_marketplace)
         );
 
@@ -88,7 +88,7 @@ contract DeployCrossLinkFuji is Script, CCIPHelper {
     }
 }
 
-contract DeployCrossLinkArbitrumGoerli is Script, CCIPHelper {
+contract DeployMarketplaceArbitrumGoerli is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -100,7 +100,7 @@ contract DeployCrossLinkArbitrumGoerli is Script, CCIPHelper {
         uint64 chainIdThis = 6101244977088475029;
         uint64 chainIdMaster = 16015286601757825753;
 
-        CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
+        NFTMarketplace _marketplace = new NFTMarketplace (
             chainIdThis,
             chainIdMaster,
             router,
@@ -108,7 +108,7 @@ contract DeployCrossLinkArbitrumGoerli is Script, CCIPHelper {
         );
 
         console.log(
-            "CrossLink contract deployed on with address: ",
+            "Marketplace contract deployed on with address: ",
             address(_marketplace)
         );
 
@@ -116,7 +116,7 @@ contract DeployCrossLinkArbitrumGoerli is Script, CCIPHelper {
     }
 }
 
-contract DeployCrossLinkPolygonMumbai is Script, CCIPHelper {
+contract DeployMarketplacePolygonMumbai is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -128,7 +128,7 @@ contract DeployCrossLinkPolygonMumbai is Script, CCIPHelper {
         uint64 chainIdThis = 12532609583862916517;
         uint64 chainIdMaster = 16015286601757825753;
 
-        CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
+        NFTMarketplace _marketplace = new NFTMarketplace (
             chainIdThis,
             chainIdMaster,
             router,
@@ -136,7 +136,7 @@ contract DeployCrossLinkPolygonMumbai is Script, CCIPHelper {
         );
 
         console.log(
-            "CrossLink contract deployed on with address: ",
+            "Marketplace contract deployed on with address: ",
             address(_marketplace)
         );
 
@@ -144,7 +144,7 @@ contract DeployCrossLinkPolygonMumbai is Script, CCIPHelper {
     }
 }
 
-contract DeployCrossLinkBaseGoerli is Script, CCIPHelper {
+contract DeployMarketplaceBaseGoerli is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -155,7 +155,7 @@ contract DeployCrossLinkBaseGoerli is Script, CCIPHelper {
         uint64 chainIdThis = 5790810961207155433;
         uint64 chainIdMaster = 16015286601757825753;
 
-        CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
+        NFTMarketplace _marketplace = new NFTMarketplace (
             chainIdThis,
             chainIdMaster,
             router,
@@ -163,7 +163,7 @@ contract DeployCrossLinkBaseGoerli is Script, CCIPHelper {
         );
 
         console.log(
-            "CrossLink contract deployed on with address: ",
+            "Marketplace contract deployed on with address: ",
             address(_marketplace)
         );
 
@@ -171,7 +171,7 @@ contract DeployCrossLinkBaseGoerli is Script, CCIPHelper {
     }
 }
 
-contract DeployCrossLinkBscTestnet is Script, CCIPHelper {
+contract DeployMarketplaceBscTestnet is Script, CCIPHelper {
     function run(SupportedNetworks chain) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -182,7 +182,7 @@ contract DeployCrossLinkBscTestnet is Script, CCIPHelper {
         uint64 chainIdThis = 13264668187771770619;
         uint64 chainIdMaster = 16015286601757825753;
 
-        CrossLinkMarketplace _marketplace = new CrossLinkMarketplace (
+        NFTMarketplace _marketplace = new NFTMarketplace (
             chainIdThis,
             chainIdMaster,
             router,
@@ -190,7 +190,7 @@ contract DeployCrossLinkBscTestnet is Script, CCIPHelper {
         );
 
         console.log(
-            "CrossLink contract deployed on with address: ",
+            "Marketplace contract deployed on with address: ",
             address(_marketplace)
         );
 
@@ -205,7 +205,7 @@ contract UpdateCrossChainApp is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        CrossLinkMarketplace(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
+        NFTMarketplace(marketplace).updateCrossChainApp(chainSelector, crossChainAppAddress);
 
         vm.stopBroadcast();
     }
@@ -231,27 +231,27 @@ contract WithdrawLink is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        CrossLinkMarketplace(to).withdrawToken(beneficiary, link);
+        NFTMarketplace(to).withdrawToken(beneficiary, link);
 
         vm.stopBroadcast();
     }
 }
 
-contract Marketplace is Script, CCIPHelper {
+contract NFTMarketplace is Script, CCIPHelper {
     function listing(address payable to, address tokenAddress, uint256 tokenId, uint256 price) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        CrossLinkMarketplace(to).listing(tokenAddress, tokenId, price);
+        NFTMarketplace(to).listing(tokenAddress, tokenId, price);
 
         vm.stopBroadcast();
     }
 
-    function buy(address payable to, CrossLinkMarketplace.SaleType saleType, uint64[] memory bestRoutes, address tokenAddress, uint256 tokenId) external {
+    function buy(address payable to, uint64[] memory bestRoutes, NFTMarketplace.SaleType saleType, address tokenAddress, uint256 tokenId) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        CrossLinkMarketplace(to).buy(saleType, bestRoutes, tokenAddress, tokenId);
+        NFTMarketplace(to).buy(bestRoutes, saleType, tokenAddress, tokenId);
 
         vm.stopBroadcast();
     }
@@ -260,7 +260,7 @@ contract Marketplace is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        CrossLinkMarketplace(to).setTokenPayment(token);
+        NFTMarketplace(to).setTokenPayment(token);
 
         vm.stopBroadcast();
     }

@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
-import {SimpleERC20} from "../src/token/SimpleERC20.sol";
+import {SimpleERC20} from "../src/mocks/SimpleERC20.sol";
 
 contract DeploySimpleERC20 is Script {
     function run() external {
@@ -10,8 +10,8 @@ contract DeploySimpleERC20 is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         SimpleERC20 erc20 = new SimpleERC20(
-            "Crosslink",
-            "CL"
+            "Cross Chain ETH",
+            "ccipETH"
         );
 
         console.log(
