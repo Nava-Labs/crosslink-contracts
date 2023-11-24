@@ -237,7 +237,7 @@ contract WithdrawLink is Script, CCIPHelper {
     }
 }
 
-contract NFTMarketplace is Script, CCIPHelper {
+contract Marketplace is Script, CCIPHelper {
     function listing(address payable to, address tokenAddress, uint256 tokenId, uint256 price) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
