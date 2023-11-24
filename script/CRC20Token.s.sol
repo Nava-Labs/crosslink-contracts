@@ -14,7 +14,7 @@ contract DeployCRC20SourceInSepolia is Script, CCIPHelper {
         (address router, , ,) = getConfigFromNetwork(chain);
 
         uint64 chainIdSepolia = 16015286601757825753;
-        address tokenAddress = 0xce30262B38873322765b50290c0c4267F321E3a0;
+        address tokenAddress = 0x20AF34a33637C2c1671E071Dba89FB68f4403334;
 
         CRC20Source crcSource = new CRC20Source(
            tokenAddress,
@@ -38,8 +38,8 @@ contract DeployCRC20TokenExampleInOPGoerli is Script, CCIPHelper {
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged Cross Link";
-        string memory symbol = "BCL";
+        string memory name = "Cross Chain ETH";
+        string memory symbol = "ccipETH";
         uint64 chainIdOPGoerli = 2664363617261496610;
 
        CRC20Example _CRC20Example = new CRC20Example(
@@ -65,8 +65,8 @@ contract DeployCRC20TokenExampleInFuji is Script, CCIPHelper {
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged Cross Link";
-        string memory symbol = "BCL";
+        string memory name = "Cross Chain ETH";
+        string memory symbol = "ccipETH";
         uint64 chainIdFuji = 14767482510784806043;
 
        CRC20Example _CRC20Example = new CRC20Example(
@@ -92,8 +92,8 @@ contract DeployCRC20TokenExampleInArbitrumGoerli is Script, CCIPHelper {
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged Cross Link";
-        string memory symbol = "BCL";
+        string memory name = "Cross Chain ETH";
+        string memory symbol = "ccipETH";
         uint64 chainIdArbitrumGoerli = 6101244977088475029;
 
        CRC20Example _CRC20Example = new CRC20Example(
@@ -119,8 +119,8 @@ contract DeployCRC20TokenExampleInPolygonMumbai is Script, CCIPHelper {
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged Cross Link";
-        string memory symbol = "BCL";
+        string memory name = "Cross Chain ETH";
+        string memory symbol = "ccipETH";
         uint64 chainIdPolygonMumbai = 12532609583862916517;
 
        CRC20Example _CRC20Example = new CRC20Example(
@@ -146,8 +146,8 @@ contract DeployCRC20TokenExampleInBaseGoerli is Script, CCIPHelper {
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged Cross Link";
-        string memory symbol = "BCL";
+        string memory name = "Cross Chain ETH";
+        string memory symbol = "ccipETH";
         uint64 chainIdBaseGoerli = 5790810961207155433;
 
        CRC20Example _CRC20Example = new CRC20Example(
@@ -173,8 +173,8 @@ contract DeployCRC20TokenExampleInBSCTestnet is Script, CCIPHelper {
 
         (address router, , ,) = getConfigFromNetwork(chain);
 
-        string memory name = "Bridged Cross Link";
-        string memory symbol = "BCL";
+        string memory name = "Cross Chain ETH";
+        string memory symbol = "ccipETH";
         uint64 chainIdBaseGoerli = 13264668187771770619;
 
        CRC20Example _CRC20Example = new CRC20Example(

@@ -10,8 +10,8 @@ contract DeploySimpleERC20 is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         SimpleERC20 erc20 = new SimpleERC20(
-            "Cross Chain ETH",
-            "ccipETH"
+            "Ethereum",
+            "ETH"
         );
 
         console.log(
