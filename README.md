@@ -21,8 +21,8 @@ This repository presents an extensive framework designed for the development of 
 
   **Key Functions:**
   - `_syncData(bytes memory encodedData)`: Synchronizes data across chains.
-  - `_storeData(bytes memory encodedData)`: Processes application-specific messages (how data stored).
-  - `_sendToMasterOrUpdate(bytes memory encodedMessageWithExtensionId)`: Sends data to the master chain and synchronizes the data across chains.
+  - `_storeData(bytes memory encodedData)`: Processes application-specific data (how data stored).
+  - `_sendToMasterOrUpdate(bytes memory encodedDataWithExtensionId)`: Sends data to the master chain and synchronizes the data across chains.
 
   **Notes:** `encodedData` must be decodable in `storeData`.
 
