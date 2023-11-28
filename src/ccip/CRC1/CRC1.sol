@@ -16,7 +16,7 @@ import {Trustable} from "./Trustable.sol";
  * It leverages `CCIPReceiver` for message handling and `Trustable` for maintaining a security layer.
  *
  * Key Features:
- * - Multi-Hop Feature: By default, `CRC1` enables a multihop feature, allowing messages to hop to multiple blockchain networks *
+ * - Multi-Hop Feature: By default, `CRC1` enables a multihop feature, allowing messages to hop to multiple blockchain networks
  * seamlessly. 
  * This functionality is crucial for complex cross-chain interactions where a direct connection between the source and destination 
  * chains may not be available.
