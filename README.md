@@ -1,7 +1,7 @@
 # CRC1 & CRC20
 
 ## Overview
-This repository presents an extensive framework designed for the development of cross-chain applications and the standardization of tokens, utilizing the capabilities of Chainlink CCIP. It includes several key components: CRC1, CRC1Syncable, and CRC20.
+This repository presents an extensive framework designed for the development of cross-chain applications and the standardization of tokens, utilizing the capabilities of Chainlink CCIP. It includes several key components: CRC1, CRC1Syncable, CRC20 and FeeAutomation.
 
 ## Components
 ### CRC1
@@ -41,6 +41,11 @@ This repository presents an extensive framework designed for the development of 
   - `burnAndMintOrUnlock`: Burns tokens on the destination chain and mints or unlocks corresponding tokens on the target chain.
   - `_executeAppMessage`: Overridden to handle messages specific to CRC20Destination.
 
+### FeeAutomation 
+- Utilize chainlink automation for mantain fee allocation in cross-chain app.
+- Avoiding mantaining LINK balance manually.
+- Action triggered everytime cross-chain app send CCIP message, emitted `MessageSent(bytes32,bytes)` event.
+
 ## Usage
 ### Deploying a Cross-Chain Application
 - Base your application on CRC1.
@@ -49,6 +54,10 @@ This repository presents an extensive framework designed for the development of 
 ### Making an ERC20 Token Cross-Chain
 - Deploy CRC20Source on the chain where the original ERC20 token exists.
 - Implement CRC20Destination on destination chains to enable the token's cross-chain functionality.
+
+### Utilize FeeAutomation 
+- Import FeeAutomation
+- Hit `registerFeeAutomation`
 
 ## Contributing
 Contributions are welcome. Please submit pull requests or open issues for any enhancements or bug fixes.
