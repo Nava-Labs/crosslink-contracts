@@ -10,21 +10,21 @@ This repository presents an extensive framework designed for the development of 
 - Supports Multihop functionality across all chains and Message Bundling for bulk operations by default.
 
   **Key Functions:**
-  - `_executeAndForwardMessage(uint64[] memory bestRoutes, bytes[] memory encodedMessage)`: Handles the execution and forwarding of messages across chains. Best Routes parameters should be populated by Chainlink chainIdSelector. Pass the encoded message to this function to execute logic app.
-  - `_executeAppMessage(bytes[] memory encodedMessage)`: Processes application-specific messages.
+  - `_executeAndForwardMessage(uint64[] memory bestRoutes, bytes[] memory encodedAppMessage)`: Handles the execution and forwarding of messages across chains. Best Routes parameters should be populated by Chainlink chainIdSelector. Pass the encoded message to this function to execute logic app.
+  - `_executeAppMessage(bytes[] memory encodedAppMessage)`: Processes application-specific messages.
 
-  **Notes:** `encodedMessage` must be decodable in `executeAppMessage`.
+  **Notes:** `encodedAppMessage` must be decodable in `executeAppMessage`.
 
 ### CRC1Syncable
 - An extension of CRC1, designed for applications that require consistent states across contracts on various chains.
 - Manages cross-chain data synchronization and state harmonization.
 
   **Key Functions:**
+  - `_syncData(bytes memory encodedData)`: Synchronizes data across chains.
+  - `_storeData(bytes memory encodedData)`: Processes application-specific messages (how data stored).
   - `_sendToMasterOrUpdate(bytes memory encodedMessageWithExtensionId)`: Sends data to the master chain and synchronizes the data across chains.
-  - `_syncData(bytes memory encodedMessage)`: Synchronizes data across chains.
-  - `_storeData(bytes memory data)`: Stores data and processes application-specific messages.
 
-  **Notes:** `encodedMessage` must be decodable in `storeData`.
+  **Notes:** `encodedData` must be decodable in `storeData`.
 
 ### Trustable
 - Provides a security layer for CRC1, ensuring secure cross-chain operations.
