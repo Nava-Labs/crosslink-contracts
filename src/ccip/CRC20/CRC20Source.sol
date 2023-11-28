@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {CRC1} from "ccip/CRC1/CRC1.sol";
-import {CRC1FeeAutomation} from "ccip/CRC1/utils/CRC1FeeAutomation.sol";
+import {FeeAutomation} from "ccip/CRC1/utils/FeeAutomation.sol";
 import {ICRC20Source} from "./interfaces/ICRC20Source.sol";
 
 error UnauthorizedChainSelector();
@@ -20,7 +20,7 @@ error UnauthorizedChainSelector();
  * can achieve cross-chain functionality by inheriting `CRC20Destination` on destination chains, with `CRC20Source` maintaining the 
  * ERC20.
  */
-contract CRC20Source is CRC1, ICRC20Source, CRC1FeeAutomation {    
+contract CRC20Source is CRC1, ICRC20Source, FeeAutomation {    
 
     address immutable public tokenAddress; 
 
@@ -34,7 +34,10 @@ contract CRC20Source is CRC1, ICRC20Source, CRC1FeeAutomation {
      */
     event Unlock(address indexed to, uint256 indexed amount);
 
-    constructor(address _tokenAddress, address _router, uint64 _chainIdThis) CRC1(_chainIdThis, _router){
+    constructor(address _tokenAddress, address _router, uint64 _chainIdThis, address _link, address _automationRegistrar) 
+        CRC1(_chainIdThis, _router)
+        FeeAutomation(_link, _automationRegistrar)
+    {
         tokenAddress = _tokenAddress;
     }
 

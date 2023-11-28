@@ -58,7 +58,7 @@ interface ILogAutomation {
  * Contract extension serving as a Fee Automation for CRC1.
  * This contract is responsible for handling CRC1 Fee.
  */
-contract CRC1FeeAutomation is OwnerIsCreator{
+contract FeeAutomation is OwnerIsCreator{
 
     address immutable i_link;
     address immutable i_registrar;
@@ -71,10 +71,10 @@ contract CRC1FeeAutomation is OwnerIsCreator{
 
     constructor(
         address link,
-        address registrar
+        address automationRegistrar
     ) {
         i_link = link;
-        i_registrar = registrar;
+        i_registrar = automationRegistrar;
     }
 
     // =============================================================
