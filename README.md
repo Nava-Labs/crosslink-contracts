@@ -11,6 +11,8 @@ This repository presents an extensive framework designed for the development of 
 
   **Key Functions:**
   - `_executeAndForwardMessage(uint64[] memory bestRoutes, bytes[] memory encodedAppMessage)`: Handles the execution and forwarding of messages across chains. Best Routes parameters should be populated by Chainlink chainIdSelector (**chain by chain**). Pass the encoded message to this function to execute logic app.
+    `e.g FUJI -> BASE GOERLI -> OP GOERLI` `bestRoutes` supposed to be `[14767482510784806043,5790810961207155433,2664363617261496610]`
+    `e.g FUJI -> BASE GOERLI -> OP GOERLI -> BSC TESTNET` supposed to be `[14767482510784806043,5790810961207155433,2664363617261496610,13264668187771770619]`
   - `_executeAppMessage(bytes[] memory encodedAppMessage)`: Processes application-specific messages.
 
   **Notes:** `encodedAppMessage` must be decodable in `executeAppMessage`.
