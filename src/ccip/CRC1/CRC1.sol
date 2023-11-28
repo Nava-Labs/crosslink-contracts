@@ -8,9 +8,15 @@ import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
 import {Trustable} from "./Trustable.sol";
 
-/*
- * Abstract contract for creating cross-chain applications using CCIP.
- * This contract sets up the basic framework for sending, receiving, and processing cross-chain messages.
+/**
+ * @dev This abstract contract is designed to build cross-chain applications utilizing CCIP (Cross-Chain Interoperability Protocol).
+ *
+ * `CRC1` serves as a foundational framework for the core functionalities necessary in cross-chain app communication, including the sending, receiving, and processing of cross-chain messages. It leverages `CCIPReceiver` for message handling and `Trustable` for maintaining a security layer.
+ *
+ * Key Features:
+ * - Multi-Hop Feature: By default, `CRC1` enables a multihop feature, allowing messages to hop to multiple blockchain networks seamlessly. This functionality is crucial for complex cross-chain interactions where a direct connection between the source and destination chains may not be available.
+ * - Message Bundling: `CRC1` supports bundling messages, enabling the execution of bulk operations. This feature allows for efficient processing of multiple messages grouped together, enhancing throughput and simplifying transactional processes in cross-chain communication.
+ *
  */
 abstract contract CRC1 is CCIPReceiver, Trustable {
     error UnauthorizedChainSelector();
@@ -113,7 +119,7 @@ abstract contract CRC1 is CCIPReceiver, Trustable {
     function _ccipReceive(
         Client.Any2EVMMessage memory message
     ) internal virtual override {
-        uint64 sourceChainSelector = message.sourceChainSelector; // fetch the source chain identifier (aka selector)
+        uint64 sourceChainSelector = message.sourceChainSelector; // fetch the source chain identifier (aka chain selector)
         address sender = abi.decode(message.sender, (address)); // abi-decoding of the sender address
 
         // Trusted Sender check
@@ -137,6 +143,13 @@ abstract contract CRC1 is CCIPReceiver, Trustable {
     ) public onlyOwner {
         uint256 amount = IERC20(token).balanceOf(address(this));
         IERC20(token).transfer(beneficiary, amount);
+    }
+
+    /**
+     * @dev Checks whether is CRC1
+     */
+    function supportsExtInterface(bytes4 interfaceId) public view virtual returns (bool) {
+        return interfaceId == 0x524f4f54;
     }
     
 }

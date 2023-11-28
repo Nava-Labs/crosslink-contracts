@@ -6,7 +6,7 @@ import {CRC20Destination} from "ccip/CRC20/CRC20Destination.sol";
 /*
  * Contract example for deploying a token across multiple chains.
  * Demonstrate how a token can be deployed and managed across different chains
- * in a network powered by the our Chainlink App library and Token Proxy standarization.
+ * using CRC1 and CRC20.
  */
 contract CRC20Example is CRC20Destination {
     constructor(

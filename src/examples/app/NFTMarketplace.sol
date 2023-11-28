@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {CRC1Syncable} from "ccip/CRC1/extension/CRC1Syncable.sol";
+import {CRC1Syncable} from "ccip/CRC1/extensions/CRC1Syncable.sol";
 import {ICRC20Source} from "ccip/CRC20/interfaces/ICRC20Source.sol";
 import {ICRC20Destination} from "ccip/CRC20/interfaces/ICRC20Destination.sol";
 
@@ -145,7 +145,7 @@ contract NFTMarketplace is CRC1Syncable {
             _appMessage[0] = _encodeSaleData(tokenAddress, tokenId, _listedBy, msg.sender);
 
             /*
-             * Executes and forwards the message to enable multi-hop functionality and atomic executions.
+             * Executes and forwards the message to enable multi-hop functionality and bundling executions.
              * By using this function, messages can be sent across multiple chains.
              * In this context, it's used to handle the cross-chain sale process.
              */
@@ -251,7 +251,7 @@ contract NFTMarketplace is CRC1Syncable {
     }
 
     /*
-     * Impelement the _executeAppMessage function from the ChainlinkApp library.
+     * Impelement the _executeAppMessage function from the CRC1.
      * Executes application-specific logic upon receiving a message via CCIP.
      * In the context of the CrossLinkMarketplace, this function is tailored to handle post-buy operations.
      * It iterates over each encoded message, decodes it to extract sale details,
@@ -281,7 +281,7 @@ contract NFTMarketplace is CRC1Syncable {
     }
 
     /*
-     * Impelement the _storeData function from the DataLayer extension.
+     * Impelement the _storeData function from the CRC1Sycnable.
      * This function is critical for updating the contract state in a cross-chain context.
      * It decodes the incoming data based on its messageId and updates the contract's state
      * with the new listing or sale details. Specifically, in this example, it handles the

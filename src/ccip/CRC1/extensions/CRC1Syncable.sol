@@ -3,9 +3,17 @@ pragma solidity 0.8.19;
 
 import {Client, IRouterClient, CRC1} from "../CRC1.sol";
 
-/*
- * Contract extension serving as a data layer for ChainlinkApp.
- * This contract is responsible for managing cross-chain data synchronization.
+/**
+ * @dev An extension of the CRC1 contract, CRC1Syncable is designed to facilitate comprehensive data synchronization across different blockchain networks. It serves as a crucial data layer for applications that require consistent state management and data harmonization across multiple chains.
+ *
+ * This contract manages the process of ensuring that all contracts across all chains maintain an updated and synchronized state.
+ *
+ * Key Element:
+ * - `latestSyncTimestamp`: A public variable that holds the timestamp of the most recent data synchronization event. 
+ * This timestamp is essential for establishing data finality.
+ *
+ * The sync process typically involves sending data to a master chain, which then orchestrates the distribution and synchronization
+ * across other chains.
  */
 abstract contract CRC1Syncable is CRC1 {
     uint64 immutable public chainIdMaster; // Master chain ID for data synchronization
@@ -100,7 +108,7 @@ abstract contract CRC1Syncable is CRC1 {
     function _distributeSyncData(uint64 excludedChain, bytes memory data) private {
         CrossChainMetadataAddress[6] memory _metadatas = getAllNetworks(); 
 
-        // always exclude sepolia for duplication while storing data
+        // always exclude sepolia and excludedChain (origin) for duplication while storing data
         for(uint8 i = 1; i < _metadatas.length; i++) {
             if (_metadatas[i].chainIdSelector != excludedChain) {
                 _sendMessage(_metadatas[i].chainIdSelector, _metadatas[i].crossChainApp, data);    
@@ -157,9 +165,12 @@ abstract contract CRC1Syncable is CRC1 {
     }
 
     /**
-     * @dev Checks whether is Data Extension
+     * @dev Checks whether is CRC1Syncable
      */
-    function supportsExtInterface(bytes4 interfaceId) public pure returns (bool) {
-        return interfaceId == 0x44617461;
+    function supportsExtInterface(bytes4 interfaceId) public view virtual override(CRC1) returns (bool) {
+        return
+            super.supportsInterface(interfaceId) ||
+            interfaceId == 0x44617461;
     }
+
 }
