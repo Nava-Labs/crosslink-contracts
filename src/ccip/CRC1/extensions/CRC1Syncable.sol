@@ -4,7 +4,8 @@ pragma solidity 0.8.19;
 import {Client, IRouterClient, CRC1} from "../CRC1.sol";
 
 /**
- * @dev An extension of the CRC1 contract, CRC1Syncable is designed to facilitate comprehensive data synchronization across different blockchain networks. It serves as a crucial data layer for applications that require consistent state management and data harmonization across multiple chains.
+ * @dev An extension of the CRC1 contract, CRC1Syncable is designed to facilitate comprehensive data synchronization across different blockchain networks. 
+ * It serves as a crucial data layer for applications that require consistent state management and data harmonization across multiple chains.
  *
  * This contract manages the process of ensuring that all contracts across all chains maintain an updated and synchronized state.
  *

@@ -11,11 +11,18 @@ import {Trustable} from "./Trustable.sol";
 /**
  * @dev This abstract contract is designed to build cross-chain applications utilizing CCIP (Cross-Chain Interoperability Protocol).
  *
- * `CRC1` serves as a foundational framework for the core functionalities necessary in cross-chain app communication, including the sending, receiving, and processing of cross-chain messages. It leverages `CCIPReceiver` for message handling and `Trustable` for maintaining a security layer.
+ * `CRC1` serves as a foundational framework for the core functionalities necessary in cross-chain app communication, including the
+ * sending, receiving, and processing of cross-chain messages. 
+ * It leverages `CCIPReceiver` for message handling and `Trustable` for maintaining a security layer.
  *
  * Key Features:
- * - Multi-Hop Feature: By default, `CRC1` enables a multihop feature, allowing messages to hop to multiple blockchain networks seamlessly. This functionality is crucial for complex cross-chain interactions where a direct connection between the source and destination chains may not be available.
- * - Message Bundling: `CRC1` supports bundling messages, enabling the execution of bulk operations. This feature allows for efficient processing of multiple messages grouped together, enhancing throughput and simplifying transactional processes in cross-chain communication.
+ * - Multi-Hop Feature: By default, `CRC1` enables a multihop feature, allowing messages to hop to multiple blockchain networks *
+ * seamlessly. 
+ * This functionality is crucial for complex cross-chain interactions where a direct connection between the source and destination 
+ * chains may not be available.
+ * - Message Bundling: `CRC1` supports bundling messages, enabling the execution of bulk operations. 
+ * This feature allows for efficient processing of multiple messages grouped together, enhancing throughput and simplifying 
+ * transactional processes in cross-chain communication.
  *
  */
 abstract contract CRC1 is CCIPReceiver, Trustable {

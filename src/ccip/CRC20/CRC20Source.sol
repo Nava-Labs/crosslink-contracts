@@ -9,11 +9,15 @@ import {ICRC20Source} from "./interfaces/ICRC20Source.sol";
 error UnauthorizedChainSelector();
 
 /**
- * @dev `CRC20Destination` is an extension of {ERC20} designed to simplify the process of deploying and managing tokens across multiple blockchain networks. It is part of a cross-chain token management framework that integrates with the CRC1 contract.
+ * @dev `CRC20Destination` is an extension of {ERC20} designed to simplify the process of deploying and managing tokens across *
+ * multiple blockchain networks. It is part of a cross-chain token management framework that integrates with the CRC1 contract.
  * 
- * `CRC20Source` is the initial contract to be deployed and acts as the central proxy for managing and initiating cross-chain token transactions. It is responsible wrapping the ERC20 and orchestrating token movements to other chains.
+ * `CRC20Source` is the initial contract to be deployed and acts as the central proxy for managing and initiating cross-chain token 
+ * transactions. It is responsible wrapping the ERC20 and orchestrating token movements to other chains.
  * 
- * By utilizing CRC1, this contract enables seamless and secure token interoperability across multiple blockchains. Any ERC20 token can achieve cross-chain functionality by inheriting `CRC20Destination` on destination chains, with `CRC20Source` maintaining the ERC20.
+ * By utilizing CRC1, this contract enables seamless and secure token interoperability across multiple blockchains. Any ERC20 token 
+ * can achieve cross-chain functionality by inheriting `CRC20Destination` on destination chains, with `CRC20Source` maintaining the 
+ * ERC20.
  */
 contract CRC20Source is CRC1, ICRC20Source {    
 
