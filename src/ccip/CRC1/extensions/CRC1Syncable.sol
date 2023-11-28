@@ -29,97 +29,97 @@ abstract contract CRC1Syncable is CRC1 {
     }
 
     /*
-     * Decides whether to send the message to the master chain or update the current state for data synchronization.
+     * Decides whether to send the encodedData to the master chain or update the current state for data synchronization.
      * Checks the origin of the message.
      */
     function _sendToMasterOrUpdate(
-        bytes memory encodedMessageWithExtensionId
+        bytes memory encodedDataWithExtensionId
     ) internal {
         (
             uint64 chainIdOrigin, 
-            bytes memory encodedMessage, 
+            bytes memory encodedData, 
             uint256 latestSyncTime
-        ) = _decodeSyncMessageWithExtId(encodedMessageWithExtensionId);
+        ) = _decodeSyncDataWithExtId(encodedDataWithExtensionId);
 
         if (chainIdThis != chainIdMaster && chainIdOrigin != chainIdMaster) {
-            _sendToMaster(encodedMessageWithExtensionId);
+            _sendToMaster(encodedDataWithExtensionId);
         }  else if (chainIdThis == chainIdMaster) {            
-            bytes memory encodedMessageWithMasterOrigin = abi.encode(chainIdMaster, encodedMessage, latestSyncTime);
-            bytes memory encodedSyncMessageWithExtIdAndMasterOrigin = 
-                _encodeSyncMessageWithExtId(encodedMessageWithMasterOrigin);
+            bytes memory encodedDataWithMasterOrigin = abi.encode(chainIdMaster, encodedData, latestSyncTime);
+            bytes memory encodedDataWithExtIdAndMasterOrigin = 
+                _encodeSyncDataWithExtId(encodedDataWithMasterOrigin);
 
             // avoid doubling storing data if origin == master
             if (chainIdOrigin == chainIdMaster) {
-                _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtIdAndMasterOrigin); // exclude origin and self
+                _distributeSyncData(chainIdOrigin, encodedDataWithExtIdAndMasterOrigin); // exclude origin and self
             } else {
-                _storeData(encodedMessage);
-                _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtIdAndMasterOrigin); 
+                _storeData(encodedData);
+                _distributeSyncData(chainIdOrigin, encodedDataWithExtIdAndMasterOrigin); 
             }
 
-            emit SyncDataMessage(encodedMessage);        
+            emit SyncDataMessage(encodedData);        
         } else if (chainIdOrigin == chainIdMaster) {
-            _storeData(encodedMessage);
+            _storeData(encodedData);
         }
 
         latestSyncTimestamp = latestSyncTime;
     }
 
     /*
-     * Encodes the message for syncing data with an extension ID.
+     * Encodes the data for syncing data with an extension ID.
      * This is used to standarize the format of messages being sent for synchronization.
      */
-    function _encodeSyncMessageWithExtId(bytes memory encodedMessageWithMasterOrigin) 
+    function _encodeSyncDataWithExtId(bytes memory encodedDataWithMasterOrigin) 
         internal 
         pure 
         returns (
-            bytes memory encodedMessageWithExtId
+            bytes memory encodedDataWithExtId
         ) 
     {
-        bytes memory encodedMessage = abi.encode(syncMessageId, encodedMessageWithMasterOrigin);
-        return encodedMessage;
+        bytes memory encodedData = abi.encode(syncMessageId, encodedDataWithMasterOrigin);
+        return encodedData;
     }
 
     /*
-     * Decodes the message for syncing data, extracting the origin chain ID, message content, and sync time.
-     * This function is crucial for understanding the context and content of incoming sync messages.
+     * Decodes the data for syncing data, extracting the origin chain ID, content data, and sync time.
+     * This function is crucial for understanding the context and content of incoming sync data message.
      */
-    function _decodeSyncMessageWithExtId(bytes memory encodedMessageWithExtId) 
+    function _decodeSyncDataWithExtId(bytes memory encodedDataWithExtId) 
         internal 
         pure 
         returns (
             uint64 chainIdOrigin, 
-            bytes memory encodedMessage, 
+            bytes memory encodedData, 
             uint256 latestSyncTime
         ) 
     {
-        (, bytes memory syncMessage) = abi.decode(encodedMessageWithExtId, (bytes4, bytes));
-        (chainIdOrigin, encodedMessage, latestSyncTime) = abi.decode(syncMessage, (uint64, bytes, uint256));
+        (, bytes memory syncData) = abi.decode(encodedDataWithExtId, (bytes4, bytes));
+        (chainIdOrigin, encodedData, latestSyncTime) = abi.decode(syncData, (uint64, bytes, uint256));
     }
 
     /*
-     * Forwards the message directly to the master chain for processing.
+     * Forwards the encodedData directly to the master chain for processing.
      * This is a key function in ensuring that the master chain receives all relevant data for synchronization.
      */
-    function _sendToMaster(bytes memory data) private returns (bytes32 messageId) {        
+    function _sendToMaster(bytes memory encodedData) private returns (bytes32 messageId) {        
         CrossChainMetadataAddress memory _metadataChainMaster = getConfigFromNetwork(chainIdMaster);
-        messageId = _sendMessage(chainIdMaster, _metadataChainMaster.crossChainApp, data);
+        messageId = _sendMessage(chainIdMaster, _metadataChainMaster.crossChainApp, encodedData);
    }
 
     /*
      * Internal function for applications using this abstract contract to sync data across all contracts in all chains.
      * It packages the data and initiates the synchronization process.
      */
-    function _syncData(bytes memory encodedMessage) internal {
-        bytes memory syncMessage = abi.encode(chainIdThis, encodedMessage, block.timestamp);
-        bytes memory encodedMessageWithExtensionId = abi.encode(syncMessageId, syncMessage);
-        _sendToMasterOrUpdate(encodedMessageWithExtensionId);
+    function _syncData(bytes memory encodedData) internal {
+        bytes memory syncData = abi.encode(chainIdThis, encodedData, block.timestamp);
+        bytes memory encodedDataWithExtensionId = abi.encode(syncMessageId, syncData);
+        _sendToMasterOrUpdate(encodedDataWithExtensionId );
     }
 
     /*
-     * Called when the contract receives a message for data storage.
+     * Called when the contract receives a encodedData for data storage.
      * This is where the implementation for data storage should be defined.
      */
-    function _storeData(bytes memory data) internal virtual;
+    function _storeData(bytes memory encodedData) internal virtual;
 
     /*
      * Properly distributes data to all chains, excluding the origin chain.

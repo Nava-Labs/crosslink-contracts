@@ -71,7 +71,7 @@ abstract contract CRC1 is CCIPReceiver, Trustable {
      * Abstract function to be overridden for applying logic whenever your application receives a message from CCIP.
      * This is where the specific logic of your cross-chain application will be implemented.
      */
-    function _executeAppMessage(bytes[] memory data) internal virtual;
+    function _executeAppMessage(bytes[] memory encodedAppMessage) internal virtual;
 
     /****************************************************************/
     /********************** Execute or Forward **********************/

@@ -258,9 +258,9 @@ contract NFTMarketplace is CRC1Syncable {
      * and then transfers the NFT to the new owner as per the cross-chain sale data.
      * This is an essential part of ensuring that cross-chain transactions are completed successfully.
      */
-     function _executeAppMessage(bytes[] memory encodedMessage) internal override {
-        for (uint8 i = 0; i < encodedMessage.length; i++) {
-            (, bytes memory encodedSaleMessage) = abi.decode(encodedMessage[i], (bytes4, bytes));
+     function _executeAppMessage(bytes[] memory encodedAppMessage) internal override {
+        for (uint8 i = 0; i < encodedAppMessage.length; i++) {
+            (, bytes memory encodedSaleMessage) = abi.decode(encodedAppMessage[i], (bytes4, bytes));
             (
                 address tokenAddress, 
                 uint256 tokenId, 
