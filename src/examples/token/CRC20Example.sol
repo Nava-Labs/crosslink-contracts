@@ -13,6 +13,8 @@ contract CRC20Example is CRC20Destination {
         string memory name, 
         string memory symbol, 
         address router,
-        uint64 chainIdThis
-    ) CRC20Destination(name, symbol, router,chainIdThis) {}
+        uint64 chainIdThis,
+        address link,
+        address registrar
+    ) CRC20Destination(name, symbol, router, chainIdThis, link, registrar) {}
 }

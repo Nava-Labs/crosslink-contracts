@@ -12,7 +12,7 @@ contract DeployMarketplaceSepolia is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, , , ) = getConfigFromNetwork(chain);
+        (address router, , , , ) = getConfigFromNetwork(chain);
         address _tokenPayment = 0xeB21Ad3953eDB8228a50E4f0FcD6A1F6391b38e7;
 
         uint64 chainIdThis = 16015286601757825753;
@@ -39,7 +39,7 @@ contract DeployMarketplaceOpGoerli is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, , , ) = getConfigFromNetwork(chain);
+        (address router, , , , ) = getConfigFromNetwork(chain);
         address _tokenPayment = 0x84Ca5978286e5c49152424d68101B07465a89D53;
 
         uint64 chainIdThis = 2664363617261496610;
@@ -66,7 +66,7 @@ contract DeployMarketplaceFuji is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, , , ) = getConfigFromNetwork(chain);
+        (address router, , , , ) = getConfigFromNetwork(chain);
                 address _tokenPayment = 0x6B13990cf43D2Abfe785AB7De89067653BACbeF3;
 
         uint64 chainIdThis = 14767482510784806043;
@@ -93,8 +93,8 @@ contract DeployMarketplaceArbitrumGoerli is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, , , ) = getConfigFromNetwork(chain);
-                address _tokenPayment = address(0);
+        (address router, , , ,) = getConfigFromNetwork(chain);
+        address _tokenPayment = address(0);
 
 
         uint64 chainIdThis = 6101244977088475029;
@@ -121,7 +121,7 @@ contract DeployMarketplacePolygonMumbai is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, , , ) = getConfigFromNetwork(chain);
+        (address router, , , ,) = getConfigFromNetwork(chain);
                 address _tokenPayment = address(0);
 
 
@@ -149,7 +149,7 @@ contract DeployMarketplaceBaseGoerli is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, , , ) = getConfigFromNetwork(chain);
+        (address router, , , ,) = getConfigFromNetwork(chain);
         address _tokenPayment = 0x4C4b43A82fb9222E8505FBf6030D1F6D92a6ff9C;
         
         uint64 chainIdThis = 5790810961207155433;
@@ -176,7 +176,7 @@ contract DeployMarketplaceBscTestnet is Script, CCIPHelper {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        (address router, , , ) = getConfigFromNetwork(chain);
+        (address router, , , ,) = getConfigFromNetwork(chain);
         address _tokenPayment = 0xa23C69E42a8CBf7270cFAE05B6079A07B47C5612;
         
         uint64 chainIdThis = 13264668187771770619;
@@ -213,7 +213,7 @@ contract UpdateCrossChainApp is Script, CCIPHelper {
 
 contract DistributeLink is Script, CCIPHelper {
     function run(SupportedNetworks network, address to, uint256 amount) external {
-        (, address link, , ) = getConfigFromNetwork(network);
+        (, address link, , , ) = getConfigFromNetwork(network);
 
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
@@ -226,7 +226,7 @@ contract DistributeLink is Script, CCIPHelper {
 
 contract WithdrawLink is Script, CCIPHelper {
     function run(SupportedNetworks network, address payable to, address beneficiary) external {
-        (, address link, , ) = getConfigFromNetwork(network);
+        (, address link, , , ) = getConfigFromNetwork(network);
 
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);

@@ -62,6 +62,22 @@ contract CCIPHelper {
     address constant linkBSCTest =
         0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06;
 
+     // Registrar Addresses (used to register for automate)
+    address constant registrarEthereumSepolia =
+        0xb0E49c5D0d05cbc241d68c05BC5BA1d1B7B72976;
+    address constant registrarOptimismGoerli =
+        0xCA7A0b1F8153EcD3861899d468dC946F22B39114;
+    address constant registrarAvalancheFuji =
+        0x819B58A646CDd8289275A87653a2aA4902b14fe6;
+    address constant registrarArbitrumTestnet =
+        0xA6deE996014d9670144943c2bc90755829398d07;
+    address constant registrarPolygonMumbai =
+        0xb58E509b59538256854b2a223289160F83B23F92;
+    address constant registrarBaseGoerli =
+        0x0000000000000000000000000000000000000000;
+    address constant registrarBSCTest =
+        0x0631ea498c2Cd8371B020b9eC03f5F779174562B;
+
     // Wrapped native addresses
     address constant wethEthereumSepolia =
         0x097D90c9d3E0B50Ca60e1ae45F6A81010f9FB534;
@@ -151,6 +167,7 @@ contract CCIPHelper {
         returns (
             address router,
             address linkToken,
+            address registrar,
             address wrappedNative,
             uint64 chainId
         )
@@ -159,6 +176,7 @@ contract CCIPHelper {
             return (
                 routerEthereumSepolia,
                 linkEthereumSepolia,
+                registrarEthereumSepolia,
                 wethEthereumSepolia,
                 chainIdEthereumSepolia
             );
@@ -166,6 +184,7 @@ contract CCIPHelper {
             return (
                 routerOptimismGoerli,
                 linkOptimismGoerli,
+                registrarOptimismGoerli,
                 wethOptimismGoerli,
                 chainIdOptimismGoerli
             );
@@ -173,6 +192,7 @@ contract CCIPHelper {
             return (
                 routerArbitrumTestnet,
                 linkArbitrumTestnet,
+                registrarArbitrumTestnet,
                 wethArbitrumTestnet,
                 chainIdArbitrumTestnet
             );
@@ -180,6 +200,7 @@ contract CCIPHelper {
             return (
                 routerAvalancheFuji,
                 linkAvalancheFuji,
+                registrarAvalancheFuji,
                 wavaxAvalancheFuji,
                 chainIdAvalancheFuji
             );
@@ -187,6 +208,7 @@ contract CCIPHelper {
             return (
                 routerPolygonMumbai,
                 linkPolygonMumbai,
+                registrarPolygonMumbai,
                 wmaticPolygonMumbai,
                 chainIdPolygonMumbai
             );
@@ -194,6 +216,7 @@ contract CCIPHelper {
             return (
                 routerBaseGoerli,
                 linkBaseGoerli,
+                registrarBaseGoerli,
                 wethBaseGoerli,
                 chainIdBaseGoerli
             );
@@ -201,6 +224,7 @@ contract CCIPHelper {
             return (
                 routerBSCTest,
                 linkBSCTest,
+                registrarBSCTest,
                 wbnbBSCTest,
                 chainIdBSCTest
             );

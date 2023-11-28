@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {CRC1} from "ccip/CRC1/CRC1.sol";
+import {CRC1FeeAutomation} from "ccip/CRC1/utils/CRC1FeeAutomation.sol";
 import {ICRC20Source} from "./interfaces/ICRC20Source.sol";
 
 error UnauthorizedChainSelector();
@@ -19,7 +20,7 @@ error UnauthorizedChainSelector();
  * can achieve cross-chain functionality by inheriting `CRC20Destination` on destination chains, with `CRC20Source` maintaining the 
  * ERC20.
  */
-contract CRC20Source is CRC1, ICRC20Source {    
+contract CRC20Source is CRC1, ICRC20Source, CRC1FeeAutomation {    
 
     address immutable public tokenAddress; 
 
