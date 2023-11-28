@@ -27,13 +27,12 @@ contract DeployMockERC721 is Script {
 contract MockERC721Interaction is Script {
     function approve(
         address token,
-        address spender,
-        uint256 tokenId
+        address spender
     ) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        SimpleERC721(token).approve(spender, tokenId);
+        SimpleERC721(token).setApprovalForAll(spender, true);
 
         vm.stopBroadcast();
     }
