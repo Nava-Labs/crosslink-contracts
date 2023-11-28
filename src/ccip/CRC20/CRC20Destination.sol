@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 
 import {IERC20, ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {CRC1} from "../CRC1/CRC1.sol";
+import {CRC1FeeAutomation} from "ccip/CRC1/utils/CRC1FeeAutomation.sol";
 import {ICRC20Destination} from "./interfaces/ICRC20Destination.sol";
 
 error UnauthorizedChainSelector();
@@ -13,7 +14,7 @@ error UnauthorizedChainSelector();
  * via Chainlink CCIP.
  * recognized off-chain (via event analysis).
  */
-abstract contract CRC20Destination is CRC1, ICRC20Destination, ERC20 {    
+abstract contract CRC20Destination is CRC1, ICRC20Destination, ERC20, CRC1FeeAutomation {    
 
     /**
      * @dev Emitted when ERC20 is unlocked or minted
@@ -24,9 +25,10 @@ abstract contract CRC20Destination is CRC1, ICRC20Destination, ERC20 {
     //                            CCIP
     // =============================================================
 
-    constructor(string memory name, string memory symbol, address _router, uint64 _chainIdThis) 
+    constructor(string memory name, string memory symbol, address _router, uint64 _chainIdThis,address _link, address _registrar) 
     ERC20(name, symbol) 
-    CRC1(_chainIdThis, _router) {}
+    CRC1(_chainIdThis, _router)
+    CRC1FeeAutomation(_link, _registrar) {}
 
     receive() external payable {}
 
