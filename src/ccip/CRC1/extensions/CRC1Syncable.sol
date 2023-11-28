@@ -4,8 +4,8 @@ pragma solidity 0.8.19;
 import {Client, IRouterClient, CRC1} from "../CRC1.sol";
 
 /**
- * @dev An extension of the CRC1 contract, CRC1Syncable is designed to facilitate comprehensive data synchronization across different blockchain networks. 
- * It serves as a crucial data layer for applications that require consistent state management and data harmonization across multiple chains.
+ * @dev An extension of the CRC1 contract, CRC1Syncable is designed to facilitate comprehensive data synchronization across different * blockchain networks. 
+ * It serves as a crucial data layer for applications that require consistent state management and data harmonization across multiple * chains.
  *
  * This contract manages the process of ensuring that all contracts across all chains maintain an updated and synchronized state.
  *
@@ -35,20 +35,25 @@ abstract contract CRC1Syncable is CRC1 {
     function _sendToMasterOrUpdate(
         bytes memory encodedMessageWithExtensionId
     ) internal {
-        (uint64 chainIdOrigin, bytes memory encodedMessage, uint256 latestSyncTime) = _decodeSyncMessageWithExtensionId(encodedMessageWithExtensionId);
+        (
+            uint64 chainIdOrigin, 
+            bytes memory encodedMessage, 
+            uint256 latestSyncTime
+        ) = _decodeSyncMessageWithExtId(encodedMessageWithExtensionId);
 
         if (chainIdThis != chainIdMaster && chainIdOrigin != chainIdMaster) {
             _sendToMaster(encodedMessageWithExtensionId);
         }  else if (chainIdThis == chainIdMaster) {            
             bytes memory encodedMessageWithMasterOrigin = abi.encode(chainIdMaster, encodedMessage, latestSyncTime);
-            bytes memory encodedSyncMessageWithExtensionIdWithMasterOrigin = _encodeSyncMessageWithExtensionId(encodedMessageWithMasterOrigin);
+            bytes memory encodedSyncMessageWithExtIdAndMasterOrigin = 
+                _encodeSyncMessageWithExtId(encodedMessageWithMasterOrigin);
 
             // avoid doubling storing data if origin == master
             if (chainIdOrigin == chainIdMaster) {
-                _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtensionIdWithMasterOrigin); // exclude origin and self
+                _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtIdAndMasterOrigin); // exclude origin and self
             } else {
                 _storeData(encodedMessage);
-                _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtensionIdWithMasterOrigin); 
+                _distributeSyncData(chainIdOrigin, encodedSyncMessageWithExtIdAndMasterOrigin); 
             }
 
             emit SyncDataMessage(encodedMessage);        
@@ -61,19 +66,33 @@ abstract contract CRC1Syncable is CRC1 {
 
     /*
      * Encodes the message for syncing data with an extension ID.
-     * This is used to standardize the format of messages being sent for synchronization.
+     * This is used to standarize the format of messages being sent for synchronization.
      */
-    function _encodeSyncMessageWithExtensionId(bytes memory encodedMessageWithMasterOrigin) internal pure returns (bytes memory encodedMessageWithExtensionId) {
-        bytes memory encodedMessageWithWithExtensionIdAndMasterOrigin = abi.encode(syncMessageId, encodedMessageWithMasterOrigin);
-        return encodedMessageWithWithExtensionIdAndMasterOrigin;
+    function _encodeSyncMessageWithExtId(bytes memory encodedMessageWithMasterOrigin) 
+        internal 
+        pure 
+        returns (
+            bytes memory encodedMessageWithExtId
+        ) 
+    {
+        bytes memory encodedMessage = abi.encode(syncMessageId, encodedMessageWithMasterOrigin);
+        return encodedMessage;
     }
 
     /*
      * Decodes the message for syncing data, extracting the origin chain ID, message content, and sync time.
      * This function is crucial for understanding the context and content of incoming sync messages.
      */
-    function _decodeSyncMessageWithExtensionId(bytes memory encodedMessageWithExtensionId) internal pure returns (uint64 chainIdOrigin, bytes memory encodedMessage, uint256 latestSyncTime) {
-        (, bytes memory syncMessage) = abi.decode(encodedMessageWithExtensionId, (bytes4, bytes));
+    function _decodeSyncMessageWithExtId(bytes memory encodedMessageWithExtId) 
+        internal 
+        pure 
+        returns (
+            uint64 chainIdOrigin, 
+            bytes memory encodedMessage, 
+            uint256 latestSyncTime
+        ) 
+    {
+        (, bytes memory syncMessage) = abi.decode(encodedMessageWithExtId, (bytes4, bytes));
         (chainIdOrigin, encodedMessage, latestSyncTime) = abi.decode(syncMessage, (uint64, bytes, uint256));
     }
 
