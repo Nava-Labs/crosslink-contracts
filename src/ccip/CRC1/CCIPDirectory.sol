@@ -7,6 +7,7 @@ abstract contract CCIPDirectory {
         uint64 chainIdSelector;
         address ccipRouter;
         address linkToken;
+        address automationRegistrar;
         address crossChainApp;
     }
 
@@ -25,6 +26,7 @@ abstract contract CCIPDirectory {
             chainIdSelector: 16015286601757825753,
             ccipRouter: 0xD0daae2231E9CB96b94C8512223533293C3693Bf,
             linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+            automationRegistrar : 0xb0E49c5D0d05cbc241d68c05BC5BA1d1B7B72976,
             crossChainApp: 0x0000000000000000000000000000000000000000
         });
 
@@ -33,6 +35,7 @@ abstract contract CCIPDirectory {
             chainIdSelector: 2664363617261496610,
             ccipRouter: 0xEB52E9Ae4A9Fb37172978642d4C141ef53876f26,
             linkToken: 0xdc2CC710e42857672E7907CF474a69B63B93089f,
+            automationRegistrar : 0xCA7A0b1F8153EcD3861899d468dC946F22B39114,
             crossChainApp: 0x0000000000000000000000000000000000000000
         });
 
@@ -41,6 +44,7 @@ abstract contract CCIPDirectory {
             chainIdSelector: 14767482510784806043,
             ccipRouter: 0x554472a2720E5E7D5D3C817529aBA05EEd5F82D8,
             linkToken: 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846,
+            automationRegistrar : 0x819B58A646CDd8289275A87653a2aA4902b14fe6,
             crossChainApp: 0x0000000000000000000000000000000000000000
         });
 
@@ -49,6 +53,7 @@ abstract contract CCIPDirectory {
             chainIdSelector: 6101244977088475029,
             ccipRouter: 0x88E492127709447A5ABEFdaB8788a15B4567589E,
             linkToken: 0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28,
+            automationRegistrar : 0xA6deE996014d9670144943c2bc90755829398d07,
             crossChainApp: 0x0000000000000000000000000000000000000000
         });
 
@@ -57,6 +62,7 @@ abstract contract CCIPDirectory {
             chainIdSelector: 12532609583862916517,
             ccipRouter: 0x70499c328e1E2a3c41108bd3730F6670a44595D1,
             linkToken: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB,
+            automationRegistrar : 0xb58E509b59538256854b2a223289160F83B23F92,
             crossChainApp: 0x0000000000000000000000000000000000000000
         });
 
@@ -65,6 +71,7 @@ abstract contract CCIPDirectory {
             chainIdSelector: 5790810961207155433,
             ccipRouter: 0xA8C0c11bf64AF62CDCA6f93D3769B88BdD7cb93D,
             linkToken: 0xD886E2286Fd1073df82462ea1822119600Af80b6,
+            automationRegistrar : 0x0000000000000000000000000000000000000000,
             crossChainApp: 0x0000000000000000000000000000000000000000
         });
 
@@ -73,6 +80,7 @@ abstract contract CCIPDirectory {
             chainIdSelector: 13264668187771770619,
             ccipRouter: 0x9527E2d01A3064ef6b50c1Da1C0cC523803BCFF2,
             linkToken: 0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06,
+            automationRegistrar : 0x0631ea498c2Cd8371B020b9eC03f5F779174562B,
             crossChainApp: 0x0000000000000000000000000000000000000000
         });
         
