@@ -10,7 +10,7 @@ This repository presents an extensive framework designed for the development of 
 - Supports Multihop functionality across all chains and Message Bundling for bulk operations by default.
 
   **Key Functions:**
-  - `_executeAndForwardMessage(uint64[] memory bestRoutes, bytes[] memory encodedAppMessage)`: Handles the execution and forwarding of messages across chains. Best Routes parameters should be populated by Chainlink chainIdSelector. Pass the encoded message to this function to execute logic app.
+  - `_executeAndForwardMessage(uint64[] memory bestRoutes, bytes[] memory encodedAppMessage)`: Handles the execution and forwarding of messages across chains. Best Routes parameters should be populated by Chainlink chainIdSelector (**chain by chain**). Pass the encoded message to this function to execute logic app.
   - `_executeAppMessage(bytes[] memory encodedAppMessage)`: Processes application-specific messages.
 
   **Notes:** `encodedAppMessage` must be decodable in `executeAppMessage`.
