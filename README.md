@@ -1,66 +1,55 @@
-## Foundry
+# CRC1 & CRC20
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Overview
+This repository presents an extensive framework designed for the development of cross-chain applications and the standardization of tokens, utilizing the capabilities of Chainlink CCIP. It includes several key components: CRC1, CRC1Syncable, and CRC20.
 
-Foundry consists of:
+## Components
+### CRC1
+- A foundational contract for building cross-chain applications using Chainlink CCIP.
+- Enables functionalities like message sending, receiving, and processing across chains.
+- Supports Multihop functionality across all chains and Message Bundling for bulk operations by default.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+  **Key Functions:**
+  - `_executeAndForwardMessage(uint64[] memory bestRoutes, bytes[] memory encodedMessage)`: Handles the execution and forwarding of messages across chains. Best Routes parameters should be populated by Chainlink chainIdSelector. Pass the encoded message to this function to execute logic app.
+  - `_executeAppMessage(bytes[] memory encodedMessage)`: Processes application-specific messages.
 
-## Documentation
+  **Notes:** `encodedMessage` must be decodable in `executeAppMessage`.
 
-https://book.getfoundry.sh/
+### CRC1Syncable
+- An extension of CRC1, designed for applications that require consistent states across contracts on various chains.
+- Manages cross-chain data synchronization and state harmonization.
+
+  **Key Functions:**
+  - `_sendToMasterOrUpdate(bytes memory encodedMessageWithExtensionId)`: Sends data to the master chain and synchronizes the data across chains.
+  - `_syncData(bytes memory encodedMessage)`: Synchronizes data across chains.
+  - `_storeData(bytes memory data)`: Stores data and processes application-specific messages.
+
+  **Notes:** `encodedMessage` must be decodable in `storeData`.
+
+### Trustable
+- Provides a security layer for CRC1, ensuring secure cross-chain operations.
+
+### CRC20 (Source and Destination)
+- A framework for ERC20 tokens to operate across multiple chains, integrating with the CRC1 contract.
+- Split into CRC20Source and CRC20Destination for token wrapping and deployment on various chains.
+
+  **CRC20Source Key Functions:**
+  - `lockAndMint`: Locks tokens on the source chain and mints corresponding tokens on the destination chain.
+  - `_executeAppMessage`: Overridden to handle messages specific to CRC20Source.
+
+  **CRC20Destination Key Functions:**
+  - `burnAndMintOrUnlock`: Burns tokens on the destination chain and mints or unlocks corresponding tokens on the target chain.
+  - `_executeAppMessage`: Overridden to handle messages specific to CRC20Destination.
 
 ## Usage
+### Deploying a Cross-Chain Application
+- Base your application on CRC1.
+- Extend with CRC1Syncable for synchronized state applications.
 
-### Build
+### Making an ERC20 Token Cross-Chain
+- Deploy CRC20Source on the chain where the original ERC20 token exists.
+- Implement CRC20Destination on destination chains to enable the token's cross-chain functionality.
 
-```shell
-$ forge build
-```
+## Contributing
+Contributions are welcome. Please submit pull requests or open issues for any enhancements or bug fixes.
 
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
