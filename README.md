@@ -66,6 +66,10 @@ This repository presents an extensive framework designed for the development of 
 - Import FeeAutomation
 - Hit `registerFeeAutomation`
 
-## Contributing
-Contributions are welcome. Please submit pull requests or open issues for any enhancements or bug fixes.
+## Other cool things that we build in Constellation 2023 🛠️
+- **[OpenCCIP SDK](https://github.com/Nava-Labs/openccip-sdk) - Dijkstra's Algorithm**: 
+  - Following the principle of Dijkstra's Shortest Path Algorithm, we assigned "weight" to each possible direct lane supported by CCIP which is calculated based on each blockchain _Time-To-Finality_, _5-day average gas price_, and _Transaction per Second_.
+  - With the assigned "weight", the best route can be found. To make things easy from the front end, we build this into an SDK, so the front end only needs to pass the "from" and "to" chains. The SDK will find the best possible routes, which then will be passed to the smart contract for the cross-chain transaction to be executed.
+- **The Graph**:
+  - Index data across all chains (thanks to **CRC1Syncable**), such as the details of listed NFTs in all chains and ease the process of showing data in the front end.
 
